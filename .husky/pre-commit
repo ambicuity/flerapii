@@ -1,0 +1,8 @@
+echo "🔍 Running lint-staged..."
+
+pnpm lint-staged --concurrent false || {
+  echo "❌ Lint-staged checks failed"
+  exit 1
+}
+
+echo "✅ All checks passed!"

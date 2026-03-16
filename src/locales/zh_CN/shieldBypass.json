@@ -1,0 +1,11 @@
+{
+  "titlePrefix": "Flerapii · Shield Bypass",
+  "toast": {
+    "title": "Flerapii shielded bypass helper (temporary window)",
+    "body": "This page was opened automatically by Flerapii to pass protection pages (e.g., Cloudflare challenges) and obtain the required cookies/session.\n\nIt’s necessary so Flerapii can make successful requests and detect data on protected sites.\n\nIf a verification step appears, complete it in this window; once passed, Flerapii continues and this window may close automatically.",
+    "actions": {
+      "openSettings": "Open shield bypass settings",
+      "dismiss": "Dismiss"
+    }
+  }
+}

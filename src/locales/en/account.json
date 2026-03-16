@@ -1,0 +1,143 @@
+{
+  "title": "Account Management",
+  "description": "Manage all AI redistribution stations with one click",
+  "emptyState": "No accounts yet",
+  "addFirstAccount": "Add your first account",
+  "addAccount": "Add Account",
+  "currentSiteAdded": "⚠️Saved accounts exist for {{siteName}}",
+  "currentSiteAddedCount": "⚠️Saved accounts exist for this site ({{count}})",
+  "currentLoginAdded": "⚠️Current login already added for {{siteName}}",
+  "list": {
+    "sort": "Sort",
+    "dragHandle": "Drag to reorder",
+    "header": {
+      "account": "Account",
+      "balance": "Balance",
+      "todayConsumption": "Today's Consumption",
+      "todayIncome": "Today's Income"
+    },
+    "balance": {
+      "refreshBalance": "Click to refresh balance",
+      "refreshCashflow": "Click to refresh today's consumption",
+      "refreshIncome": "Click to refresh today's income"
+    },
+    "site": {
+      "currentSiteExists": "Same site as the current tab",
+      "currentSite": "Current Site",
+      "disabled": "Disabled",
+      "lastSync": "Last Sync",
+      "status": "Status",
+      "reason": "Reason",
+      "unknown": "Unknown",
+      "notAvailable": "N/A",
+      "refreshHealthStatus": "Click to refresh health status",
+      "customCheckInUrl": "External check-in URL, click to go: {{url}}",
+      "checkInUnsupported": "Site may not support check-in",
+      "checkedInToday": "Checked in today, click to view",
+      "notCheckedInToday": "Not checked in today, click to go",
+      "checkInStatusOutdated": "Check-in status wasn't detected today (last check time: {{time}}). Click to refresh"
+    }
+  },
+  "stats": {
+    "totalBalance": "Total Balance",
+    "todayCashflow": "Today's Cashflow",
+    "todayConsumption": "Today's Consumption",
+    "todayIncome": "Today's Income",
+    "prompt": "Prompt",
+    "completion": "Completion"
+  },
+  "refresh": {
+    "refreshingAll": "Refreshing all accounts...",
+    "refreshComplete": "Refresh complete: {{success}} success, {{failed}} failed",
+    "refreshPartialSkipped": "Refresh complete: {{success}} success, {{skipped}} skipped",
+    "refreshSuccess": "All accounts refreshed successfully!",
+    "refreshFailed": "Refresh failed, please try again later"
+  },
+  "healthStatus": {
+    "healthy": "Healthy",
+    "warning": "Warning",
+    "error": "Error",
+    "unknown": "Unknown",
+    "normal": "Account status is normal",
+    "httpError": "HTTP {{statusCode}}: {{message}}",
+    "tempWindowDisabled": "Protection bypass is disabled. Enable it in Settings > Data Refresh",
+    "tempWindowPermissionRequired": "Protection bypass needs cookie interceptor permissions on Firefox. Grant them in Settings > Permissions",
+    "apiError": "API error",
+    "networkFailed": "Network connection failed",
+    "unknownError": "Unknown error"
+  },
+  "actions": {
+    "edit": "Edit",
+    "delete": "Delete",
+    "disableAccount": "Disable account",
+    "enableAccount": "Enable account",
+    "copyUrl": "Copy URL",
+    "copyKey": "Copy Key",
+    "refresh": "Refresh",
+    "quickCheckin": "Quick check-in",
+    "viewDetails": "View Details",
+    "keyCopied": "Key copied to clipboard",
+    "noKeyFound": "No available key found",
+    "fetchKeyInfoFailed": "Failed to fetch key info",
+    "fetchKeyListFailed": "Failed to fetch key list: {{errorMessage}}",
+    "urlCopied": "URL copied to clipboard",
+    "keyList": "Key List",
+    "keyManagement": "Key Management",
+    "modelManagement": "Model Management",
+    "usageLog": "Usage Log",
+    "redeemPage": "Redeem/Top-up",
+    "locateManagedSiteChannel": "Locate channel",
+    "locateManagedSiteChannelUnsupportedHint": "Unsupported",
+    "locateManagedSiteChannelUnsupported": "These features are unavailable because Veloera does not currently support searching channels by URL.",
+    "channelLocateNoKeyFallback": "No API key is available for ranked matching. Filtered channels by URL only.",
+    "channelLocateMultipleKeysFallback": "Multiple keys found. Filtered channels by URL only.",
+    "channelLocateConfigMissing": "Managed-site admin config is unavailable. Filtered channels by URL for review.",
+    "channelLocateInputPreparationFallback": "Ranked matching inputs could not be prepared. Filtered channels by URL only.",
+    "channelLocateSecondaryExactModels": "Found a secondary match by exact model set. Filtered channels by URL for review.",
+    "channelLocateSecondaryModelsContained": "Found a secondary match by model containment. Filtered channels by URL for review.",
+    "channelLocateSecondaryModelsSimilar": "Found a secondary match by model similarity. Filtered channels by URL for review.",
+    "channelLocateKeyMatchOnly": "Found a key match under the same URL bucket, but the model set did not match. Filtered channels by URL for review.",
+    "channelLocateKeyMatchedModelsDrifted": "The same channel matched the key, but the model set only matched approximately. Filtered channels by URL for review.",
+    "channelLocateSignalsConflict": "Key and model checks pointed to different channel candidates. Filtered channels by URL for review.",
+    "channelLocateFuzzyUrlOnly": "Found only a fuzzy URL-level match. Filtered channels by URL for review.",
+    "channelLocateUnresolved": "No likely channel could be confirmed. Filtered channels by URL only.",
+    "channelLocateKeyUnavailable": "Filtered channels by URL. Exact matching by key is unavailable or requires verification.",
+    "channelLocateFailed": "Failed to locate channel",
+    "channelLocateFailedWithError": "Failed to locate channel: {{errorMessage}}",
+    "viewOnLdoh": "View on LDOH",
+    "openAllExternalCheckIn": "Open all external check-ins",
+    "openAllExternalCheckInHint": "Open unchecked external check-ins. Ctrl/Cmd: open all. Shift: open in new window. Ctrl/Cmd+Shift: open all in new window.",
+    "scanDuplicates": "Scan duplicates",
+    "scanDuplicatesHint": "Scan accounts for duplicates (origin + upstream user id) and clean them up safely.",
+    "pin": "Pin account",
+    "unpin": "Unpin account",
+    "pinned": "Pinned",
+    "unpinned": "Unpinned"
+  },
+  "search": {
+    "placeholder": "Enter site information or account information to search",
+    "noResults": "No matching accounts found"
+  },
+  "filter": {
+    "tagsLabel": "Filter tags",
+    "tagsPlaceholder": "Select tags",
+    "tagsAllLabel": "All",
+    "clearTags": "Clear",
+    "summary": "{{count}} account(s)"
+  },
+  "filteredTotals": {
+    "title": "Filtered totals",
+    "balance": "Balance",
+    "consumption": "Today's consumption"
+  },
+  "newcomerSupport": {
+    "title": "Welcome to Flerapii",
+    "description": "You can star the project and browse the guides to learn how to manage your relay and New API accounts",
+    "hint": "Feel free to look around the website and docs before adding any accounts",
+    "actions": {
+      "star": "View on GitHub",
+      "docs": "Open getting started",
+      "about": "Visit website"
+    }
+  }
+}

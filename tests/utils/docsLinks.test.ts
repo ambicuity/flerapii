@@ -1,0 +1,35 @@
+import { describe, expect, it } from "vitest"
+
+import { getChangelogAnchorId } from "~/utils/navigation/changelogAnchor"
+import {
+  getDocsChangelogUrl,
+  getDocsPageUrl,
+} from "~/utils/navigation/docsLinks"
+import { getDocsLocalePath } from "~/utils/navigation/docsLocale"
+import { getHomepage } from "~/utils/navigation/packageMeta"
+
+describe("docsLinks", () => {
+  it("builds a stable changelog anchor id from version", () => {
+    expect(getChangelogAnchorId("2.39.0")).toBe("_2-39-0")
+    expect(getChangelogAnchorId("v2.39.0")).toBe("_2-39-0")
+  })
+
+  it("builds changelog url with version anchor", () => {
+    const url = getDocsChangelogUrl("2.39.0")
+    expect(url.startsWith(getHomepage())).toBe(true)
+    expect(url).toContain("changelog.html#_2-39-0")
+  })
+
+  it("maps extension language to docs locale path unconditionally empty", () => {
+    expect(getDocsLocalePath("en")).toBe("")
+    expect(getDocsLocalePath("en-US")).toBe("")
+    expect(getDocsLocalePath("ja")).toBe("")
+    expect(getDocsLocalePath("zh_CN")).toBe("")
+  })
+
+  it("builds locale-aware docs page urls without subdirectory", () => {
+    expect(getDocsPageUrl("faq.html", "en")).toContain("/faq.html")
+    expect(getDocsPageUrl("faq.html", "ja")).toContain("/faq.html")
+    expect(getDocsPageUrl("faq.html", "zh_CN")).toContain("/faq.html")
+  })
+})

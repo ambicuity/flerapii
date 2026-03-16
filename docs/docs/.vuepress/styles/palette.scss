@@ -1,0 +1,22 @@
+// .vuepress/styles/palette.scss
+// Override VuePress default palette to match Flerapii / Gujarati Python theme
+
+:root {
+  --c-brand: #4f46e5;
+  --c-brand-light: #6366f1;
+  --c-bg: #030712;
+  --c-bg-light: #111827;
+  --c-bg-lighter: #1f2937;
+  --c-text: #f9fafb;
+  --c-text-light: #d1d5db;
+  --c-text-lighter: #9ca3af;
+  --c-border: #374151;
+  --c-border-dark: #1f2937;
+  --c-danger: #ef4444;
+  --c-tip: #22c55e;
+  --c-warning: #f59e0b;
+  
+  // Fonts
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-code: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}

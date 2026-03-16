@@ -1,0 +1,274 @@
+import {
+  ArrowPathIcon,
+  ArrowsPointingOutIcon,
+  BugAntIcon,
+  ChatBubbleLeftEllipsisIcon,
+  Cog6ToothIcon,
+  LightBulbIcon,
+} from "@heroicons/react/24/outline"
+import { PanelRightClose } from "lucide-react"
+import { useCallback } from "react"
+import toast from "react-hot-toast"
+import { useTranslation } from "react-i18next"
+
+import iconImage from "~/assets/icon.png"
+import { useUpdateLogDialogContext } from "~/components/dialogs/UpdateLogDialog"
+import Tooltip from "~/components/Tooltip"
+import { BodySmall, Caption, IconButton } from "~/components/ui"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "~/components/ui/dropdown-menu"
+import { VersionBadge } from "~/components/VersionBadge"
+import { useAccountDataContext } from "~/features/AccountManagement/hooks/AccountDataContext"
+import { changelogOnUpdateState } from "~/services/updates/changelogOnUpdateState"
+import { isExtensionSidePanel } from "~/utils/browser"
+import { getManifest, getSidePanelSupport } from "~/utils/browser/browserApi"
+import { getErrorMessage } from "~/utils/core/error"
+import { createLogger } from "~/utils/core/logger"
+import {
+  openApiCredentialProfilesPage,
+  openBugReportPage,
+  openDiscussionsPage,
+  openFeatureRequestPage,
+  openFullAccountManagerPage,
+  openFullBookmarkManagerPage,
+  openSettingsPage,
+  openSidePanelPage,
+} from "~/utils/navigation"
+
+import type { PopupViewType } from "./PopupViewSwitchTabs"
+import CompactThemeToggle from "./ThemeToggle"
+
+/**
+ * Unified logger scoped to the popup header component.
+ */
+const logger = createLogger("PopupHeaderSection")
+
+/**
+ * Development-only shortcut for manually reopening the update log dialog.
+ */
+function DevTriggerUpdateLogButton() {
+  const { openDialog } = useUpdateLogDialogContext()
+
+  const handleClick = useCallback(async () => {
+    try {
+      const { version } = getManifest()
+      if (!version) return
+
+      await changelogOnUpdateState.setPendingVersion(version)
+      const pendingVersion =
+        await changelogOnUpdateState.consumePendingVersion()
+      if (!pendingVersion) return
+
+      openDialog(pendingVersion)
+    } catch (error) {
+      const message = getErrorMessage(error)
+      logger.debug("Failed to trigger update log (dev)", { error: message })
+      toast.error(`Failed to trigger update log (dev): ${message}`)
+    }
+  }, [openDialog])
+
+  return (
+    <Tooltip content="Dev: Trigger update log">
+      <IconButton
+        onClick={() => void handleClick()}
+        variant="outline"
+        size="sm"
+        aria-label="Dev: Trigger update log"
+        className="touch-manipulation rounded-2xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+      >
+        <BugAntIcon className="h-4 w-4" />
+      </IconButton>
+    </Tooltip>
+  )
+}
+
+/**
+ * Popup header with app identity, theme toggle, and quick navigation actions.
+ */
+export default function HeaderSection({
+  showRefresh = true,
+  activeView = "accounts",
+}: {
+  showRefresh?: boolean
+  activeView?: PopupViewType
+}) {
+  const { t } = useTranslation(["ui", "account", "common"])
+  const { isRefreshing, handleRefresh } = useAccountDataContext()
+  const inSidePanel = isExtensionSidePanel()
+  const sidePanelSupported = getSidePanelSupport().supported
+
+  const handleGlobalRefresh = useCallback(async () => {
+    try {
+      await toast.promise(handleRefresh(true), {
+        loading: t("account:refresh.refreshingAll"),
+        success: (result) => {
+          if (result.failed > 0) {
+            return t("account:refresh.refreshComplete", {
+              success: result.success,
+              failed: result.failed,
+            })
+          }
+          return t("account:refresh.refreshSuccess")
+        },
+        error: t("account:refresh.refreshFailed"),
+      })
+    } catch (error) {
+      logger.error("Error during global refresh", error)
+    }
+  }, [handleRefresh, t])
+
+  const openFullPageLabel =
+    activeView === "bookmarks"
+      ? t("ui:navigation.bookmark")
+      : activeView === "apiCredentialProfiles"
+        ? t("ui:navigation.apiCredentialProfiles")
+        : t("ui:navigation.account")
+
+  const handleOpenFullPage = async () => {
+    if (activeView === "bookmarks") {
+      await openFullBookmarkManagerPage()
+      return
+    }
+
+    if (activeView === "apiCredentialProfiles") {
+      await openApiCredentialProfilesPage()
+      return
+    }
+
+    await openFullAccountManagerPage()
+  }
+
+  const handleOpenSetting = async () => {
+    await openSettingsPage()
+  }
+
+  const handleOpenSidePanel = async () => {
+    await openSidePanelPage()
+  }
+
+  return (
+    <header className="shrink-0">
+      <div className="subtle-surface flex items-center justify-between gap-2 rounded-[1.75rem] px-3 py-2.5">
+        <div className="flex min-w-0 flex-1 items-center gap-2.5">
+          <div className="subtle-surface flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl">
+            <img
+              src={iconImage}
+              alt={t("ui:app.name")}
+              className="h-6 w-6 rounded-xl shadow-sm"
+            />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col">
+            <div className="flex min-w-0 items-center gap-1.5">
+              <BodySmall
+                weight="semibold"
+                className="truncate text-sm tracking-[-0.02em] text-slate-900 dark:text-white"
+              >
+                {t("ui:app.name")}
+              </BodySmall>
+              <VersionBadge size="sm" className="shrink-0" />
+            </div>
+            <Caption className="xs:block hidden truncate text-xs text-slate-500 dark:text-slate-400">
+              {t("ui:app.description")}
+            </Caption>
+          </div>
+        </div>
+
+        <div className="flex shrink-0 items-center gap-1">
+          <CompactThemeToggle />
+
+          <DropdownMenu>
+            <Tooltip content={t("ui:feedback.triggerTooltip")}>
+              <DropdownMenuTrigger asChild>
+                <IconButton
+                  variant="outline"
+                  size="sm"
+                  aria-label={t("ui:feedback.trigger")}
+                  className="touch-manipulation rounded-xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+                >
+                  <ChatBubbleLeftEllipsisIcon className="h-3.5 w-3.5" />
+                </IconButton>
+              </DropdownMenuTrigger>
+            </Tooltip>
+            <DropdownMenuContent align="end" className="w-52">
+              <DropdownMenuItem onClick={() => void openBugReportPage()}>
+                <BugAntIcon className="h-4 w-4" />
+                {t("ui:feedback.bugReport")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void openFeatureRequestPage()}>
+                <LightBulbIcon className="h-4 w-4" />
+                {t("ui:feedback.featureRequest")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void openDiscussionsPage()}>
+                <ChatBubbleLeftEllipsisIcon className="h-4 w-4" />
+                {t("ui:feedback.discussion")}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {import.meta.env.MODE === "development" && (
+            <DevTriggerUpdateLogButton />
+          )}
+
+          {showRefresh && (
+            <Tooltip content={t("common:actions.refresh")}>
+              <IconButton
+                onClick={handleGlobalRefresh}
+                disabled={isRefreshing}
+                variant="outline"
+                size="sm"
+                aria-label={t("common:actions.refresh")}
+                className="touch-manipulation rounded-xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+              >
+                <ArrowPathIcon
+                  className={`h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`}
+                />
+              </IconButton>
+            </Tooltip>
+          )}
+
+          <Tooltip content={openFullPageLabel}>
+            <IconButton
+              onClick={handleOpenFullPage}
+              variant="outline"
+              size="sm"
+              aria-label={openFullPageLabel}
+              className="touch-manipulation rounded-xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+            >
+              <ArrowsPointingOutIcon className="h-3.5 w-3.5" />
+            </IconButton>
+          </Tooltip>
+
+          <Tooltip content={t("common:labels.settings")}>
+            <IconButton
+              onClick={handleOpenSetting}
+              variant="outline"
+              size="sm"
+              aria-label={t("common:labels.settings")}
+              className="touch-manipulation rounded-xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+            >
+              <Cog6ToothIcon className="h-3.5 w-3.5" />
+            </IconButton>
+          </Tooltip>
+
+          {!inSidePanel && sidePanelSupported && (
+            <Tooltip content={t("common:actions.openSidePanel")}>
+              <IconButton
+                aria-label={t("common:actions.openSidePanel")}
+                size="sm"
+                variant="outline"
+                className="rounded-xl border-white/10 bg-white/5 dark:bg-white/[0.03]"
+                onClick={handleOpenSidePanel}
+              >
+                <PanelRightClose className="h-3.5 w-3.5" />
+              </IconButton>
+            </Tooltip>
+          )}
+        </div>
+      </div>
+    </header>
+  )
+}

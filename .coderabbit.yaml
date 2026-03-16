@@ -1,0 +1,146 @@
+# Docs: https://docs.coderabbit.ai/
+language: "en-US"
+early_access: true
+
+# ============================================================================
+reviews:
+  profile: "assertive"
+  request_changes_workflow: true
+  assess_linked_issues: true
+
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - "main"
+
+  # ===== SCAM AND ABUSE DETECTION (checked BEFORE any code review) =====
+  review_instructions: |
+    ## Scam Detection -- Run before any other check
+
+    Scan the PR title, description, every comment, and every added file for:
+
+    ### 1. Payment Solicitation (CRITICAL -- immediate request_changes)
+    Flag and request changes if any of the following appear anywhere in the PR:
+    - Cryptocurrency wallet addresses:
+      - EVM/Ethereum: `0x` followed by 40 hex characters
+      - Solana: base58 string 32-44 chars
+      - Bitcoin: strings starting with `1`, `3`, or `bc1q`
+    - Phrases: "Payment address", "EVM:", "Solana:", "BTC:", "ETH:", "tip jar", "donate"
+    Response: "**Payment solicitation is not permitted.** Flagging for maintainer (@ambicuity) to close and block."
+
+    ### 2. Empty PRs Claiming to Implement a Fix (MAJOR)
+    Flag if ALL of the following are true:
+    - PR title contains "fix" or "chore"
+    - The ONLY changed file is a `.md` file
+    - The markdown file is a copy of the PR description or contains a script not in the diff
+    Response: "This PR adds only documentation -- the actual fix is missing from the diff."
+
+    ### 3. AI-Generated Stub (MAJOR)
+    Flag if:
+    - Description says "This PR was generated automatically" but there are no code changes
+    - A script appears in the PR description but not in any changed file
+    Response: "This appears to be an AI-generated stub without a real implementation. See CONTRIBUTING.md for requirements."
+
+  # ===== PATH-SPECIFIC REVIEW DIRECTIVES =====
+  path_instructions:
+
+    # -- Extension Core --
+    - path: "src/services/**"
+      instructions: |
+        This directory contains the core business logic. Apply senior-level scrutiny.
+
+        ## Correctness (Non-Negotiable)
+        1. All HTTP calls must use the established API service patterns. Bare `fetch()` is a hard reject.
+        2. No bare `catch` clauses. Catch specific exceptions and log them with context.
+        3. Async operations must not mutate shared state without proper synchronization.
+        4. Every new public function requires JSDoc and full type annotations.
+
+        ## Architecture
+        5. Respect the existing service/adapter pattern. New adapters must follow the existing interface contracts.
+        6. Do not introduce new external dependencies without documented justification.
+        7. Enforce strict separation of concerns: no UI rendering logic inside services.
+        8. Favor idempotency in state modification functions.
+
+    # -- React Components --
+    - path: "src/components/**"
+      instructions: |
+        1. Components must be properly typed with explicit prop interfaces.
+        2. Avoid inline styles; use Tailwind classes or CSS modules.
+        3. Event handlers must be properly typed (not `any`).
+        4. Prefer controlled components over uncontrolled.
+        5. Accessibility: all interactive elements must have proper ARIA attributes.
+        6. Adhere strictly to the project's Tailwind CSS system for styling.
+
+    # -- UI Features --
+    - path: "src/features/**"
+      instructions: |
+        Features wrap complex UI logic, keeping entrypoints thin.
+        1. Feature modules should export their primary React components and local hooks.
+        2. Keep network fetching and state management encapsulated within custom hooks.
+        3. Do not tightly couple features to specific entrypoints; they should remain reusable.
+
+    # -- Extension Entrypoints --
+    - path: "src/entrypoints/**"
+      instructions: |
+        Entrypoints should be thin wrappers. Push logic into services, hooks, or features.
+        1. No business logic in entrypoints.
+        2. Verify browser API usage is properly guarded for cross-browser compatibility.
+        3. Check that permissions required by new APIs are declared in the manifest.
+
+    # -- GitHub Actions Workflows --
+    - path: ".github/workflows/**"
+      instructions: |
+        SECURITY-CRITICAL. Apply zero-trust review.
+        1. Workflow permissions must be minimally scoped.
+        2. Flag any `pull_request_target` trigger.
+        3. All `actions/` steps should pin to a specific version tag.
+        4. Reject any workflow that echoes or logs GitHub secrets or tokens.
+        5. Flag any new workflow triggerable by external contributors without an approval gate.
+
+    # -- Tests --
+    - path: "tests/**"
+      instructions: |
+        Tests must be deterministic, offline, and meaningful.
+        1. No live network calls. All HTTP must be mocked (use MSW).
+        2. Edge cases are mandatory: empty inputs, undefined, null, Unicode strings.
+        3. Every new utility or service function must have at least one test.
+        4. Reject tests that only cover the happy path.
+        5. Ensure Vitest assertions match the intent of the test (avoid overly generic `.toBeDefined()`).
+
+    # -- E2E Tests --
+    - path: "e2e/**"
+      instructions: |
+        Playwright end-to-end coverage.
+        1. Ensure tests are resilient and prefer robust locators (e.g., getting by role or text).
+        2. Mock external services where appropriate, or ensure test data is strictly isolated.
+        3. Verify that tests pass in both Chromium and Firefox environments if applicable.
+
+    # -- Documentation --
+    - path: "docs/**"
+      instructions: |
+        1. All markdown uses proper heading hierarchy.
+        2. Code blocks must specify a language identifier.
+        3. No broken internal links.
+
+    # -- Catch-all --
+    - path: "**/*"
+      instructions: |
+        GLOBAL STANDARDS -- applies to every file in every PR.
+        0. SCAM CHECK FIRST: see scam detection rules above.
+        1. Every PR must link to an issue via `Fixes #N`. No issue link = no merge.
+        2. Reject any new runtime dependencies without documented justification.
+        3. PRs should be small and focused. Flag PRs changing more than 3 unrelated areas.
+
+# ============================================================================
+chat:
+  auto_reply: true
+
+# ============================================================================
+knowledge_base:
+  learnings:
+    scope: "auto"
+  issues:
+    scope: "auto"
+  pull_requests:
+    scope: "auto"

@@ -1,0 +1,72 @@
+name: "Feature Request"
+description: Suggest an improvement to Flerapii
+title: "[Feature]: "
+labels: ["enhancement", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for suggesting a feature
+
+        Before submitting:
+        - Search [existing issues](https://github.com/ambicuity/flerapii/issues) to see if this has been discussed
+        - For major architectural changes, open a Discussion instead
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem"
+      description: What problem are you trying to solve? What currently does not work well?
+      placeholder: |
+        e.g. "I manage 10+ relay accounts and switching between them to check balances is time-consuming..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: What do you propose? Be as specific as possible.
+      placeholder: |
+        e.g. "Add a bulk balance refresh button on the dashboard that updates all accounts simultaneously..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: What other approaches did you consider? Why is your proposal better?
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Which area does this affect?"
+      options:
+        - "Dashboard and account management"
+        - "Key and token management"
+        - "Model listing and pricing"
+        - "Check-in automation"
+        - "API validation and testing"
+        - "Usage analytics and visualization"
+        - "Export and integration"
+        - "Self-hosted site backend"
+        - "Data backup and sync"
+        - "UI/UX and accessibility"
+        - "Extension infrastructure (build, CI)"
+        - "Documentation"
+        - "Other"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: constraints
+    attributes:
+      label: "Constraints Check"
+      description: |
+        Please confirm your proposal respects the project's architectural constraints.
+      options:
+        - label: "This does NOT require external backend services beyond what sites already provide"
+          required: true
+        - label: "This does NOT require replacing the existing tech stack (WXT, React, TypeScript, Tailwind)"
+          required: true

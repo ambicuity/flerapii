@@ -1,0 +1,426 @@
+{
+  "app": {
+    "name": "Flerapii",
+    "description": "Manage AI relays and your accounts and balances in one place"
+  },
+  "pageTitle": {
+    "options": "Flerapii | Settings",
+    "popup": "Flerapii | Popup",
+    "sidepanel": "Flerapii | Sidebar"
+  },
+  "sidepanelNarrow": {
+    "title": "Side panel is too narrow",
+    "description": "This dashboard needs a bit more room than the browser is currently giving it.",
+    "hint": "Drag the browser side panel edge wider, or open this view in a full page.",
+    "openAccounts": "Open accounts page",
+    "openBookmarks": "Open bookmarks page",
+    "openApiCredentialProfiles": "Open API credential profiles",
+    "openSettings": "Open settings"
+  },
+  "navigation": {
+    "home": "Home",
+    "settings": "Settings",
+    "about": "About",
+    "meshGradientLab": "Mesh Gradient Lab (Dev)",
+    "settingsOptions": "Settings Options",
+    "basic": "Basic Settings",
+    "account": "Account Management",
+    "bookmark": "Bookmark Management",
+    "usageAnalytics": "Usage Analytics",
+    "balanceHistory": "Balance History",
+    "models": "Model List",
+    "autoCheckin": "Auto Check-in",
+    "autoCheckinRunNow": "Quick check-in",
+    "managedSiteChannels": "Channels Management",
+    "managedSiteModelSync": "Model sync",
+    "externalCheckinAll": "Open all external check-ins",
+    "externalCheckinAllHint": "Open unchecked external check-ins. Ctrl/Cmd: open all. Shift: open in new window. Ctrl/Cmd+Shift: open all in new window.",
+    "externalCheckinAllDisabled": "No external check-in URLs configured",
+    "keys": "Key Management",
+    "apiCredentialProfiles": "API Credential Profiles",
+    "importExport": "Import/Export",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar",
+    "sidebarCollapsedHint": "Sidebar collapsed, showing icons only"
+  },
+  "feedback": {
+    "trigger": "Feedback",
+    "triggerTooltip": "Open feedback shortcuts",
+    "bugReport": "Report a bug",
+    "featureRequest": "Request a feature",
+    "discussion": "Start a discussion"
+  },
+  "commandPalette": {
+    "title": "Command Palette",
+    "description": "Jump between pages and settings sections.",
+    "trigger": "Quick actions",
+    "open": "Open command palette",
+    "searchPlaceholder": "Search pages and settings...",
+    "clear": "Clear search",
+    "empty": "No matching commands found.",
+    "current": "Current",
+    "groups": {
+      "pages": "Pages",
+      "settings": "Settings sections"
+    },
+    "pageDescriptions": {
+      "basic": "Open the main settings workspace.",
+      "manager": "Open this workspace page."
+    }
+  },
+  "dialog": {
+    "delete": {
+      "title": "Delete Account",
+      "warning": "You are about to delete account {{accountName}}. Please verify before confirming to delete this account",
+      "confirmDeletion": "Delete Confirmation",
+      "siteName": "Site Name",
+      "username": "Username",
+      "siteUrl": "Site URL",
+      "confirmDelete": "Confirm Delete",
+      "deleting": "Deleting account {{name}}...",
+      "noResponse": "Delete operation did not return successfully",
+      "deleteSuccess": "Account {{name}} deleted successfully!",
+      "deleteFailed": "Delete failed: {{error}}",
+      "deleteFailedGeneric": "Failed to delete account: {{error}}"
+    },
+    "dedupeAccounts": {
+      "title": "Duplicate account cleanup",
+      "description": "Scan duplicate accounts by origin + user id, then delete duplicates after preview.",
+      "strategyLabel": "Keep strategy",
+      "strategy": {
+        "keepPinned": "Keep pinned (if any)",
+        "keepEnabled": "Keep enabled (if any)",
+        "keepMostRecentlyUpdated": "Keep most recently updated"
+      },
+      "summary": "{{groups}} duplicate set(s) · {{deleteCount}} account(s) to delete",
+      "manualPickHint": "You can manually choose which account to keep in each set. Manual choices override the keep strategy.",
+      "empty": "No duplicate accounts found.",
+      "userId": "User ID: {{userId}}",
+      "duplicateCount": "{{count}} accounts",
+      "keep": "Keep",
+      "delete": "Delete",
+      "recommended": "Recommended",
+      "unscannableHint": "{{count}} account(s) could not be scanned and were skipped.",
+      "previewDelete": "Preview deletion",
+      "detailsToggle": {
+        "show": "More info",
+        "hide": "Hide info"
+      },
+      "details": {
+        "accountId": "Account ID",
+        "siteType": "Site Type",
+        "authType": "Auth Type",
+        "health": "Health",
+        "healthReason": "Reason",
+        "lastSync": "Last Sync",
+        "updatedAt": "Updated At",
+        "createdAt": "Created At",
+        "userId": "User ID",
+        "quota": "Quota",
+        "todayConsumption": "Today's Consumption",
+        "todayRequests": "Today's Requests",
+        "todayTokens": "Today's Tokens",
+        "checkinDetection": "Check-in Detection",
+        "autoCheckin": "Auto Check-in",
+        "customCheckinUrl": "Custom Check-in URL",
+        "notes": "Notes",
+        "excludeFromTotalBalance": "Exclude from Total Balance"
+      },
+      "deleting": "Deleting duplicate accounts...",
+      "confirm": {
+        "title": "Delete duplicate accounts",
+        "description": "This will delete {{deleteCount}} account(s) across {{groups}} duplicate set(s).",
+        "confirmDelete": "Delete",
+        "warningPinned": "{{count}} pinned account(s) will be deleted.",
+        "warningOrder": "Manual ordering will be adjusted."
+      }
+    },
+    "updateLog": {
+      "title": "What's New",
+      "updatedTo": "Updated to v{{version}}",
+      "loading": "Loading changelog…",
+      "openFullChangelog": "Open full changelog",
+      "disableAutoOpen": "Don't show after updates",
+      "enableAutoOpen": "Re-enable after updates",
+      "missingSection": "Couldn't load the changelog preview for v{{version}}. You can open the full changelog."
+    },
+    "tempWindowFallbackReminder": {
+      "title": "Enable temporary window mode for requests",
+      "titleTempWindowOnly": "Enable temporary window mode for requests",
+      "titleWithCookieInterceptor": "Enable protection bypass for requests",
+      "descriptionDisabled": "{{accountName}} needs a temporary popup window to open and pass protection so requests can complete successfully. Enable it in Settings > Data Refresh",
+      "descriptionDisabledTempWindowOnly": "{{accountName}} needs a temporary popup window to open and pass protection so requests can complete successfully. Enable it in Settings > Data Refresh",
+      "descriptionDisabledWithCookieInterceptor": "{{accountName}} needs the protection-bypass flow on Firefox. A temporary popup window will open to obtain cookies, and Cookie Interceptor will attach them to requests. Enable it in Settings > Data Refresh",
+      "descriptionPermission": "{{accountName}} needs Cookie Interceptor permission so the temporary popup window can open and requests can complete successfully. Grant it in Settings > Permissions",
+      "descriptionPermissionTempWindowOnly": "{{accountName}} needs permission to open a temporary popup window so requests can complete successfully. Grant it in Settings > Permissions",
+      "descriptionPermissionWithCookieInterceptor": "{{accountName}} needs Cookie Interceptor permissions on Firefox. The temporary popup window must open to obtain cookies, and requests will attach them. Grant it in Settings > Permissions",
+      "neverRemindCheckbox": "Never remind me",
+      "actions": {
+        "openSettings": "Open settings",
+        "notNow": "Not now",
+        "neverRemind": "Never remind"
+      }
+    },
+    "copyKey": {
+      "title": "Key List",
+      "loading": "Loading key list...",
+      "noKeys": "No key data yet",
+      "noKeysDescription": "Create a default key quickly, or create a custom key with advanced settings.",
+      "createKey": "Create default key",
+      "createCustomKey": "Create custom key",
+      "creatingKey": "Creating default key...",
+      "createSuccess": "Key created",
+      "createFailed": "Failed to create key: {{error}}",
+      "noKeyFoundAfterCreate": "No key was found after creating one. Please try again.",
+      "createNotSupported": "This account does not support creating keys from this dialog.",
+      "totalKeys": "Total {{count}} keys",
+      "close": "Close",
+      "getFailed": "Failed to get",
+      "retry": "Retry",
+      "defaultGroup": "Default Group",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "expireTime": "Expire time: {{time}}",
+      "usedQuota": "Used Quota",
+      "remainingQuota": "Remaining Quota",
+      "apiKey": "API Key",
+      "copied": "Copied",
+      "copy": "Copy",
+      "useInCherry": "Use in Cherry Studio",
+      "loadFailed": "Failed to load key list: {{error}}",
+      "keyCopied": "Key copied to clipboard",
+      "copyFailed": "Copy failed: {{error}}",
+      "copyFailedManual": "Copy failed, please copy manually",
+      "exportToCCSwitch": "Export to CC Switch"
+    },
+    "ccswitch": {
+      "title": "Export to CC Switch",
+      "description": "Send this provider configuration directly to CC Switch via deep link",
+      "fields": {
+        "name": "Provider name",
+        "homepage": "Homepage URL",
+        "endpoint": "API endpoint",
+        "app": "Target app",
+        "model": "Default model (optional)",
+        "notes": "Notes (optional)"
+      },
+      "descriptions": {
+        "model": "When available, models are loaded from /v1/models for selection. You can also type a custom model id."
+      },
+      "placeholders": {
+        "name": "e.g. Acme Relay",
+        "homepage": "https://example.com",
+        "endpoint": "https://example.com",
+        "model": "e.g. claude-3-opus",
+        "notes": "Add import notes"
+      },
+      "modelOptions": {
+        "none": "No default model"
+      },
+      "appOptions": {
+        "claude": "Claude",
+        "codex": "Codex",
+        "gemini": "Gemini"
+      },
+      "actions": {
+        "export": "Export"
+      },
+      "cliSupport": {
+        "title": "CLI support check",
+        "loading": "Checking cached CLI support result...",
+        "noCached": "No cached CLI support result found for this token. Run \"Verify CLI Support\" from the model list to test compatibility before exporting.",
+        "cachedHint": "Showing a cached result from the latest CLI support simulation for this token.",
+        "apiTypeHint": "Cached check uses API type: {{apiType}}"
+      }
+    },
+    "kiloCode": {
+      "title": "Export Kilo Code JSON",
+      "description": "Generate Kilo Code / Roo Code provider profiles from your selected sites and tokens.",
+      "warning": {
+        "title": "Plaintext API keys",
+        "description": "The exported JSON contains API keys in plaintext. Store it securely and do not share it."
+      },
+      "help": {
+        "perSiteTitle": "Per-site export",
+        "perSiteDescription": "Select sites to load tokens automatically. The first token is preselected, and you can select multiple tokens per site.",
+        "afterExportTitle": "After export: how to use it",
+        "afterExportDescription": "Choose one of the following:",
+        "manualTitle": "1) Manual (Copy apiConfigs)",
+        "manualDescription": "Click \"Copy apiConfigs\" and find providerProfiles.apiConfigs in the Kilo Code / Roo Code export configurations and paste them in.",
+        "importTitle": "2) Import file (Download settings)",
+        "importDescription": "Click “Download settings” to save {{filename}}, then import it in Kilo Code. Import is incremental: it adds providers and won’t remove your existing providers (same-name entries may be updated)."
+      },
+      "labels": {
+        "selectedSites": "Selected sites",
+        "selectedTokens": "Selected tokens",
+        "modelId": "Model ID",
+        "currentApiConfigName": "Current profile"
+      },
+      "descriptions": {
+        "selectedSites": "Selected sites: {{sites}}, selected keys: {{keys}}.",
+        "modelId": "Recommended per API key (Kilo Code typically requires a model ID). Defaults to the first model from this API key's upstream model list.",
+        "currentApiConfigName": "Used as providerProfiles.currentApiConfigName in {{filename}}."
+      },
+      "placeholders": {
+        "selectSites": "Select sites",
+        "selectTokens": "Select tokens",
+        "modelId": "Search or enter model ID",
+        "currentApiConfigName": "Select current profile"
+      },
+      "actions": {
+        "createDefaultToken": "Create default token",
+        "copyApiConfigs": "Copy apiConfigs",
+        "downloadSettings": "Download settings"
+      },
+      "messages": {
+        "accountNotFound": "Account not found.",
+        "loadTokensFailed": "Failed to load tokens for this site.",
+        "loadModelsFailed": "Failed to load upstream models for this API key.",
+        "loadingTokens": "Loading token list…",
+        "noTokensTitle": "No tokens available",
+        "noTokensDescription": "This site will be skipped until a token is created.",
+        "noModelsTitle": "No models",
+        "noModelsDescription": "No upstream models were returned for this API key. Kilo Code typically requires a model ID — please enter one manually.",
+        "modelIdRequiredTitle": "Model ID required",
+        "modelIdRequiredDescription": "Select or enter a model ID for all selected API keys to enable export (missing: {{count}}).",
+        "tokenCreated": "Token created",
+        "createTokenFailed": "Failed to create token.",
+        "copiedApiConfigs": "apiConfigs copied to clipboard",
+        "copyFailed": "Copy failed",
+        "downloadedSettings": "Settings file downloaded",
+        "downloadFailed": "Failed to download settings file",
+        "nothingToExportTitle": "Nothing to export",
+        "nothingToExportDescription": "Select at least one exportable token/site to enable copy/download."
+      }
+    },
+    "cliproxy": {
+      "title": "Import to CLIProxyAPI",
+      "description": "Create or update a provider entry in CLIProxyAPI.",
+      "fields": {
+        "providerType": "Provider type",
+        "name": "Provider name",
+        "baseUrl": "Provider base URL",
+        "proxyUrl": "Proxy URL (optional)",
+        "models": "Model mapping (optional)"
+      },
+      "descriptions": {
+        "providerType": "Choose which CLIProxyAPI provider family to import into.",
+        "baseUrlOpenAICompatibility": "Required. CLIProxyAPI stores the OpenAI-compatible base URL and request paths are normalized to a single /v1 suffix.",
+        "baseUrlCodexApiKey": "Required. Paste the Codex host or a full backend endpoint; the /backend-api/codex path is stripped automatically.",
+        "baseUrlClaudeApiKey": "Optional. Leave blank to use CLIProxyAPI's default Claude upstream. Pasted /v1/messages endpoints are reduced to the provider base.",
+        "baseUrlGeminiApiKey": "Optional. Leave blank to use CLIProxyAPI's default Gemini upstream. Pasted /v1beta/models endpoints are reduced to the provider base.",
+        "proxyUrl": "Optional proxy URL used for this API key entry.",
+        "models": "Map upstream model names to optional aliases (name -> alias). When available, upstream models are loaded from /v1/models for selection.",
+        "modelsManual": "Map upstream model names to optional aliases (name -> alias). Enter values manually for this provider family in this release."
+      },
+      "providerTypes": {
+        "openaiCompatibility": {
+          "label": "OpenAI compatibility",
+          "description": "Best for OpenAI-compatible relays that expose a /v1-style upstream API."
+        },
+        "codexApiKey": {
+          "label": "OpenAI / Codex API key",
+          "description": "Uses CLIProxyAPI's dedicated OpenAI / Codex provider family, executor, and management list (mapped to codex-api-key)."
+        },
+        "claudeApiKey": {
+          "label": "Claude API key",
+          "description": "Uses Claude's dedicated provider list and supports an empty base URL for the default upstream."
+        },
+        "geminiApiKey": {
+          "label": "Gemini API key",
+          "description": "Uses Gemini's dedicated provider list and supports an empty base URL for the default upstream."
+        }
+      },
+      "placeholders": {
+        "providerType": "Select a provider family",
+        "name": "e.g. Acme Relay",
+        "baseUrlOpenAICompatibility": "https://example.com/v1",
+        "baseUrlCodexApiKey": "https://example.com/router",
+        "baseUrlClaudeApiKey": "https://example.com/proxy",
+        "baseUrlGeminiApiKey": "https://example.com/genai",
+        "proxyUrl": "http://localhost:3000",
+        "modelName": "Model name, e.g. claude",
+        "modelAlias": "Model alias (optional)"
+      },
+      "actions": {
+        "addModel": "Add Model",
+        "removeModel": "Remove model",
+        "reorderModel": "Reorder model"
+      }
+    },
+    "claudeCodeRouter": {
+      "title": "Import to Claude Code Router",
+      "description": "Create or update a provider in Claude Code Router. Models are required.",
+      "fields": {
+        "providerName": "Provider name",
+        "providerApiBaseUrl": "Provider API endpoint",
+        "models": "Models",
+        "modelsPicker": "Select models",
+        "restartAfterSave": "Restart after save"
+      },
+      "descriptions": {
+        "providerApiBaseUrl": "This should be the full /v1/chat/completions endpoint.",
+        "models": "Enter one model per line or separate by commas.",
+        "restartAfterSave": "Router may require restart for config changes to take effect."
+      },
+      "placeholders": {
+        "providerName": "e.g. My Relay",
+        "providerApiBaseUrl": "https://example.com/v1/chat/completions",
+        "modelsPicker": "Type to add models"
+      }
+    },
+    "firefox": {
+      "warningTitle": "Feature Limitation Reminder",
+      "limitation": "Firefox Browser Feature Limitation",
+      "popupLimitation": "This feature cannot be used normally in the popup of Firefox browser. Please use the sidebar mode to add accounts",
+      "howOpenSidebar": "How to Open Sidebar",
+      "sidebarInstruction": "Click on the extension icon in the browser toolbar, then select the 'Sidebar' option to open the sidebar mode",
+      "confirm": "Confirm",
+      "openSidebar": "Open Sidebar"
+    }
+  },
+  "billing": {
+    "tokenBased": "Token-based billing",
+    "perCall": "Per-call billing",
+    "notProvided": "Not provided"
+  },
+  "multiSelect": {
+    "copySuccess": "Selected values copied",
+    "copyError": "Copy failed, please try again",
+    "emptyWithQueryAllowCustom": "Press Enter to add \"{{value}}\"",
+    "noOptionsAllowCustom": "No options available. Type to create one",
+    "noOptions": "No options available",
+    "placeholder": "Select...",
+    "clearInput": "Clear input",
+    "clearSelected": "Clear all selected values",
+    "selectAll": "Select all",
+    "cancelSelected": "Cancel selection"
+  },
+  "searchableSelect": {
+    "searchPlaceholder": "Search...",
+    "empty": "No results found",
+    "noOptionsAllowCustom": "No options available. Type to create one",
+    "noOptions": "No options available",
+    "useValue": "Use \"{{value}}\""
+  },
+  "repeatableInput": {
+    "actions": {
+      "add": "Add",
+      "remove": "Remove",
+      "reorder": "Drag to reorder"
+    }
+  },
+  "modelListInput": {
+    "title": "Model List (name[, alias] one per line):",
+    "description": "Example: gpt-4o-mini or moonshotai/kimi-k2:free, kimi-k2",
+    "actions": {
+      "add": "Add Model",
+      "remove": "Remove model",
+      "reorder": "Reorder model"
+    },
+    "placeholders": {
+      "name": "Model name, e.g. claude",
+      "alias": "Model alias (optional)"
+    }
+  }
+}

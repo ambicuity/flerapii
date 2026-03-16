@@ -1,0 +1,56 @@
+ci-cd:
+  - changed-files:
+    - any-glob-to-any-file: '.github/workflows/**'
+    - any-glob-to-any-file: '.github/actions/**'
+
+documentation:
+  - changed-files:
+    - any-glob-to-any-file: '**/*.md'
+    - any-glob-to-any-file: 'docs/**'
+
+enhancement:
+  - head-branch: ['^feat/', 'feat/']
+
+bug:
+  - head-branch: ['^fix/', 'fix/']
+
+ui:
+  - changed-files:
+    - any-glob-to-any-file: 'src/components/**'
+    - any-glob-to-any-file: 'src/features/**'
+    - any-glob-to-any-file: 'src/styles/**'
+
+extension-core:
+  - changed-files:
+    - any-glob-to-any-file: 'src/entrypoints/**'
+    - any-glob-to-any-file: 'src/services/**'
+
+config:
+  - changed-files:
+    - any-glob-to-any-file: 'wxt.config.ts'
+    - any-glob-to-any-file: 'tsconfig.json'
+    - any-glob-to-any-file: 'tailwind.config.js'
+
+tests:
+  - changed-files:
+    - any-glob-to-any-file: 'tests/**'
+    - any-glob-to-any-file: 'e2e/**'
+    - any-glob-to-any-file: '**/*.test.ts'
+    - any-glob-to-any-file: '**/*.test.tsx'
+
+chore:
+  - head-branch: ['^chore/', 'chore/']
+
+dependencies:
+  - changed-files:
+    - any-glob-to-any-file: 'package.json'
+    - any-glob-to-any-file: 'pnpm-lock.yaml'
+
+beginner:
+  - head-branch: ['^beginner/', 'beginner/']
+
+intermediate:
+  - head-branch: ['^intermediate/', 'intermediate/']
+
+advanced:
+  - head-branch: ['^advanced/', 'advanced/']

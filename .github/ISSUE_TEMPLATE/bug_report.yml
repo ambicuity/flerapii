@@ -1,0 +1,78 @@
+name: "Bug Report"
+description: Report a bug or issue with Flerapii
+title: "[Bug]: "
+labels: ["bug", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Thanks for reporting a bug
+
+        Before submitting:
+        1. Search [existing issues](https://github.com/ambicuity/flerapii/issues) to avoid duplicates
+        2. If it is a security vulnerability, email `contact@riteshrana.engineer` -- do NOT open a public issue
+
+        > [!IMPORTANT]
+        > If you plan to fix this bug yourself, **you must claim the issue first** by commenting
+        > `/assign`. PRs submitted without a prior assignment will be closed.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: "Bug Type"
+      description: What kind of issue are you experiencing?
+      options:
+        - "Extension: popup or sidebar not loading"
+        - "Extension: options page crash or error"
+        - "Extension: site detection failure"
+        - "Extension: balance or usage data not refreshing"
+        - "Extension: auto check-in not working"
+        - "Extension: key export failure"
+        - "Extension: model validation error"
+        - "Extension: channel sync or redirect issue"
+        - "Extension: Cloudflare challenge bypass failure"
+        - "Extension: WebDAV backup or sync issue"
+        - "Extension: dark mode rendering issue"
+        - "Build: CI or build pipeline failure"
+        - "Other"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Description"
+      description: What happened and what did you expect to happen?
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: "Browser and Version"
+      description: Which browser and version are you using?
+      placeholder: "e.g., Chrome 120, Firefox 121, Edge 120"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to Reproduce"
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Open the extension popup
+        2. Navigate to '...'
+        3. Click '...'
+        4. See error
+
+  - type: textarea
+    id: context
+    attributes:
+      label: "Additional Context"
+      description: |
+        Attach any relevant information: error messages from the browser console,
+        screenshots, or the site URL where the issue occurs.
+      placeholder: |
+        Site URL: https://example.com
+        Console error: TypeError: Cannot read property '...'

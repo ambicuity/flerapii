@@ -1,0 +1,61 @@
+{
+  "title": "About",
+  "intro": "Flerapii is a browser extension for managing both third-party New API-compatible relay sites and your own New API instance. It centralizes account and balance monitoring, smart sorting, and site detection, and provides automation features such as auto-refresh and temp-window firewall bypass. For self-hosted New API, it also offers channel management and model list synchronization, and integrates with CLIProxyAPI, WebDAV backup, and import/export tools.",
+  "version": "Version:",
+  "projectLinks": "Project Links",
+  "githubRepo": "GitHub Repository",
+  "githubDesc": "View source code, submit issues or participate in project development",
+  "starRepo": "Go star it",
+  "homepage": "Project Homepage",
+  "homepageDesc": "View detailed documentation, user guides and more information",
+  "visitHomepage": "Visit Homepage",
+  "features": "Features",
+  "implementedFeatures": "Implemented Features",
+  "upcomingFeatures": "Upcoming Features",
+  "copyrightAck": "Copyright & Acknowledgements",
+  "devMaintenance": "Development & Maintenance",
+  "thanksDesc": "Thanks to all developers who have contributed to the open source community, the development of this plugin benefits from these excellent open source projects and tools",
+  "privacyNotice": "Privacy Notice",
+  "privacyText": "All data of this plugin is stored locally in the browser and will not be actively uploaded to any server. Your account information and usage data are completely under your control, ensuring privacy and security",
+  "privacyTitle": "Privacy Protection",
+  "stores": {
+    "chrome": "Chrome Web Store",
+    "edge": "Microsoft Edge Add-ons",
+    "firefox": "Firefox Add-ons"
+  },
+  "storesSection": {
+    "title": "Rate & Download",
+    "review": {
+      "title": "Leave a positive review",
+      "description": "If Flerapii helps you, a positive review on {{store}} really helps.",
+      "button": "Rate on {{store}}"
+    },
+    "download": {
+      "description": "Download from {{store}}.",
+      "button": "Open store"
+    }
+  },
+  "feedbackSection": {
+    "title": "Feedback & Support",
+    "bugReport": {
+      "description": "Report broken behavior, errors, or unexpected results with the bug-report template.",
+      "button": "Open bug report"
+    },
+    "featureRequest": {
+      "description": "Share an improvement idea or workflow request through the feature-request template.",
+      "button": "Open feature request"
+    },
+    "discussion": {
+      "description": "Ask questions, compare setups, or start a broader community discussion on GitHub Discussions.",
+      "button": "Open discussions"
+    }
+  },
+  "techStack": {
+    "title": "Tech Stack",
+    "wxt": "Browser extension development framework",
+    "react": "User interface library",
+    "typescript": "Type-safe JavaScript",
+    "tailwindcss": "Atomic CSS framework",
+    "headlessui": "Unstyled UI components"
+  }
+}

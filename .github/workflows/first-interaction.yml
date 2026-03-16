@@ -1,0 +1,37 @@
+name: First Interaction
+
+on:
+  issues:
+    types: [opened]
+  pull_request_target:
+    types: [opened]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+jobs:
+  welcome:
+    name: Welcome First-Time Contributors
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: |
+            Welcome to Flerapii! Thank you for opening your first issue.
+
+            A maintainer will review this shortly. In the meantime, please make sure:
+            - You have searched existing issues for duplicates
+            - You have provided all requested information in the template
+
+            If you would like to contribute a fix, comment `/assign` to claim this issue.
+          pr-message: |
+            Welcome to Flerapii! Thank you for your first pull request.
+
+            A maintainer will review this shortly. Please ensure:
+            - Your PR title follows Conventional Commits format: `<type>(<scope>): <description>`
+            - Your PR description includes `Fixes #<issue-number>`
+            - All CI checks are passing
+
+            See [CONTRIBUTING.md](https://github.com/ambicuity/flerapii/blob/main/CONTRIBUTING.md) for guidelines.

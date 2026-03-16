@@ -1,0 +1,24 @@
+# CODEOWNERS
+# @ambicuity is auto-requested as reviewer on every PR.
+
+# Default: everything requires maintainer review
+*                               @ambicuity
+
+# Core extension source
+src/                            @ambicuity
+
+# CI/CD -- workflow changes need explicit maintainer sign-off
+.github/workflows/              @ambicuity
+.github/CODEOWNERS              @ambicuity
+
+# Configuration
+wxt.config.ts                   @ambicuity
+package.json                    @ambicuity
+tsconfig.json                   @ambicuity
+
+# Docs and website
+docs/                           @ambicuity
+CONTRIBUTING.md                 @ambicuity
+
+# Security policy
+SECURITY.md                     @ambicuity

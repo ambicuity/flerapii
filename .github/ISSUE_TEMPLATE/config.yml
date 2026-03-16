@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Start a Discussion
+    url: https://github.com/ambicuity/flerapii/discussions
+    about: Questions, feedback, and general discussion -- use Discussions, not Issues
+  - name: Report a Security Vulnerability
+    url: https://github.com/ambicuity/flerapii/security/advisories/new
+    about: Use GitHub Private Vulnerability Reporting -- do NOT open a public issue for security bugs
+  - name: Star this repo
+    url: https://github.com/ambicuity/flerapii
+    about: Star to stay updated and help others discover the project

@@ -1,0 +1,131 @@
+name: build-and-publish
+
+on:
+  release:
+    types: [created] # 自动监听 GitHub Release 发布
+  workflow_dispatch: # 允许手动触发
+    inputs:
+      tag:
+        description: "Release tag or commit hash to build. Leave empty to auto-detect latest."
+        required: false
+        default: ""
+      review_chrome:
+        description: "Submit Chrome build for review"
+        required: false
+        type: boolean
+        default: true
+      review_edge:
+        description: "Submit Edge build for review"
+        required: false
+        type: boolean
+        default: true
+
+permissions:
+  contents: write # 上传构建产物到 Release 需要写权限
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 先 checkout 完整仓库，后面要用 git 命令找 tag
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      # 决定要 checkout 的 ref（tag 或 commit）
+      - name: Determine ref (tag or commit)
+        id: get_ref
+        run: |
+          # 优先级：workflow 输入 tag/ref > release tag > 自动找最新 tag
+          REF="${{ github.event.inputs.tag || github.event.inputs.ref || github.event.release.tag_name }}"
+
+          if [ "$REF" = "latest" ]; then
+            # 特殊值 latest → 使用默认分支最新 commit
+            REF=$(git rev-parse origin/main)
+            echo "ℹ️ Using latest commit from main: $REF"
+          elif [ -z "$REF" ]; then
+            # 如果没有提供任何输入，就找最新语义化版本的 tag
+            REF=$(git tag --sort=-v:refname | head -n 1)
+            if [ -n "$REF" ]; then
+              echo "⚠️ No ref provided. Using latest tag: $REF"
+            else
+              echo "❌ No tag found in repo and no input ref. Skipping build."
+              echo "ref=" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          else
+            echo "ℹ️ Using provided ref (tag or commit): $REF"
+          fi
+
+          # 输出 ref 给后续步骤使用
+          echo "ref=$REF" >> $GITHUB_OUTPUT
+
+      # 3️⃣ Checkout 到指定的 ref（tag 或 commit hash）
+      - name: Checkout specific ref
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ steps.get_ref.outputs.ref }}
+          fetch-depth: 0 # 确保获取完整历史，以便 tag、commit 都能找到
+
+      # 安装 pnpm
+      - uses: pnpm/action-setup@v4
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        with:
+          version: 10
+          run_install: false
+
+      # 设置 Node.js 环境 + pnpm 缓存
+      - uses: actions/setup-node@v4
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      # 安装依赖
+      - name: Install dependencies
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        run: pnpm install
+
+      # 编译并打包扩展
+      - name: Package the extension
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        run: pnpm zip:all
+
+      # 上传 Release Artifact（仅当有 ref 时）
+      - name: Upload Release Artifact
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        continue-on-error: true
+        run: |
+          echo "Uploading .output/*.zip to release ${{ steps.get_ref.outputs.ref }}"
+          gh release upload "${{ steps.get_ref.outputs.ref }}" .output/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # 提交到浏览器商店
+      - name: Browser Platform Publish
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        continue-on-error: true
+        run: |
+          echo "Chrome review: $([ "$CHROME_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
+          echo "Edge review: $([ "$EDGE_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
+
+          pnpm wxt submit \
+            --chrome-zip .output/*-chrome.zip \
+            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip \
+            --edge-zip .output/*-chrome.zip
+        env:
+          CHROME_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_chrome == 'false' }}
+          EDGE_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_edge == 'false' }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
+          CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
+          CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+          FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
+          FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
+          FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}
+          EDGE_PRODUCT_ID: ${{ secrets.EDGE_PRODUCT_ID }}
+          EDGE_CLIENT_ID: ${{ secrets.EDGE_CLIENT_ID }}
+          EDGE_API_KEY: ${{ secrets.EDGE_API_KEY }}

@@ -1,0 +1,89 @@
+import { BookOpen, Info, Star } from "lucide-react"
+import { useTranslation } from "react-i18next"
+
+import {
+  Button,
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "~/components/ui"
+import {
+  getDocsGetStartedUrl,
+  getDocsHomepageUrl,
+} from "~/utils/navigation/docsLinks"
+import { getRepository } from "~/utils/navigation/packageMeta"
+
+const GITHUB_REPO_URL = getRepository()
+
+export const NewcomerSupportCard = () => {
+  const { t, i18n } = useTranslation("account")
+
+  const docsHomepageUrl = getDocsHomepageUrl(i18n.language)
+  const getStartedUrl = getDocsGetStartedUrl(i18n.language)
+
+  const handleOpenRepo = () => {
+    window.open(GITHUB_REPO_URL, "_blank", "noopener,noreferrer")
+  }
+
+  const handleOpenDocs = () => {
+    window.open(getStartedUrl, "_blank", "noopener,noreferrer")
+  }
+
+  const handleOpenAbout = () => {
+    window.open(docsHomepageUrl, "_blank", "noopener,noreferrer")
+  }
+
+  return (
+    <Card
+      padding="md"
+      className="mb-4 border-slate-200/60 bg-white/65 dark:border-white/10 dark:bg-white/[0.04]"
+    >
+      <CardHeader
+        bordered={false}
+        padding="sm"
+        className="flex flex-row items-start gap-3"
+      >
+        <div className="subtle-surface rounded-2xl p-2 text-blue-600 dark:text-blue-300">
+          <Info className="h-4 w-4" />
+        </div>
+        <div className="space-y-1">
+          <CardTitle>{t("newcomerSupport.title")}</CardTitle>
+          <CardDescription className="leading-relaxed">
+            {t("newcomerSupport.description")}
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent
+        padding="sm"
+        spacing="sm"
+        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"
+      >
+        <div className="flex flex-wrap gap-2">
+          <Button
+            size="sm"
+            onClick={handleOpenRepo}
+            leftIcon={<Star className="h-4 w-4" />}
+          >
+            {t("newcomerSupport.actions.star")}
+          </Button>
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={handleOpenDocs}
+            leftIcon={<BookOpen className="h-4 w-4" />}
+          >
+            {t("newcomerSupport.actions.docs")}
+          </Button>
+          <Button size="sm" variant="outline" onClick={handleOpenAbout}>
+            {t("newcomerSupport.actions.about")}
+          </Button>
+        </div>
+        <p className="dark:text-dark-text-tertiary max-w-md text-[11px] leading-5 text-gray-500">
+          {t("newcomerSupport.hint")}
+        </p>
+      </CardContent>
+    </Card>
+  )
+}
