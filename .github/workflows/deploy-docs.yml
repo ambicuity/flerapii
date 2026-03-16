@@ -53,6 +53,8 @@ jobs:
           # 创建 .nojekyll 文件，防止 GitHub Pages 尝试解析 Jekyll
           # 该文件将位于 /docs/docs/.vuepress/dist/.nojekyll
           > docs/.vuepress/dist/.nojekyll
+          # 配置 GitHub Pages 自定义域名
+          echo "flerapii.riteshrana.engineer" > docs/.vuepress/dist/CNAME
 
       - name: 部署文档
         uses: JamesIves/github-pages-deploy-action@v4
