@@ -1,0 +1,105 @@
+name: Linked Issue Enforcer
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: read-all
+
+jobs:
+  linked-issue:
+    name: Require Linked Issue
+    permissions:
+      pull-requests: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for linked issue in PR body
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request
+            const author = pr.user.login
+            const body = pr.body || ""
+            const prNumber = pr.number
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+
+            const EXEMPT_USERS = ["ambicuity", "dependabot[bot]", "github-actions[bot]"]
+            if (EXEMPT_USERS.includes(author)) {
+              core.info(`Exempting PR by ${author} from linked issue requirement.`)
+              return
+            }
+
+            const LINKED_ISSUE_RE = /(fixes|closes|resolves)\s+#\d+/i
+            if (LINKED_ISSUE_RE.test(body)) {
+              const comments = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: prNumber,
+              })
+
+              const existing = comments.data.find(
+                (c) =>
+                  c.user.login === "github-actions[bot]" &&
+                  c.body.includes("This PR does not link to an issue")
+              )
+
+              if (existing) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: existing.id,
+                })
+              }
+
+              return
+            }
+
+            const message = [
+              "## This PR Does Not Link to an Issue",
+              "",
+              "Every community PR must reference an existing issue using one of:",
+              "",
+              "- `Fixes #123`",
+              "- `Closes #123`",
+              "- `Resolves #123`",
+              "",
+              "**Why?** This keeps changes auditable and aligned with scoped issue discussions.",
+              "",
+              "**What to do next**",
+              "1. Add `Fixes #<issue-number>` in the PR description if an issue already exists.",
+              "2. If no issue exists, open one first from the issue templates and then link it.",
+              "",
+              "This check will pass automatically once the PR body is updated.",
+            ].join("\n")
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: prNumber,
+            })
+
+            const existing = comments.data.find(
+              (c) =>
+                c.user.login === "github-actions[bot]" &&
+                c.body.includes("This PR Does Not Link to an Issue")
+            )
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: message,
+              })
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: message,
+              })
+            }
+
+            core.setFailed('PR body must contain a linked issue reference (for example, "Fixes #123").')

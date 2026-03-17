@@ -1,0 +1,66 @@
+name: "Architecture Proposal"
+description: Propose a major architectural or workflow change
+title: "[Architecture]: "
+labels: ["architecture", "needs-triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Architecture Proposal
+
+        Use this template for major design changes that affect project structure,
+        extension runtime behavior, CI/CD strategy, or long-term maintenance.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem Statement"
+      description: What limitation or risk in the current architecture are you addressing?
+      placeholder: "Describe current pain points and why smaller changes are insufficient."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposed Design"
+      description: Explain the design in enough detail for implementation planning.
+      placeholder: "Include affected modules, data flow, and migration approach."
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact Analysis"
+      description: Assess impact on extension entrypoints, shared services, tests, and docs.
+      placeholder: |
+        - Entry points affected:
+        - Backward compatibility concerns:
+        - Test plan changes:
+        - Documentation updates required:
+    validations:
+      required: true
+
+  - type: dropdown
+    id: risk
+    attributes:
+      label: "Risk Level"
+      options:
+        - "Low"
+        - "Medium"
+        - "High"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: "Readiness Checklist"
+      options:
+        - label: "I reviewed existing workflows/templates to avoid duplicating automation"
+          required: true
+        - label: "I considered how this affects pnpm, WXT build outputs, and CI checks"
+          required: true
+        - label: "I am willing to help with migration and documentation if this is approved"
+          required: true

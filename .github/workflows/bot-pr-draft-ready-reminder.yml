@@ -1,0 +1,66 @@
+name: Draft PR Ready-for-Review Reminder
+
+on:
+  schedule:
+    - cron: "0 10 * * 2"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  draft-reminder:
+    name: Remind Draft PR Authors to Publish
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check draft PRs for age and remind
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const now = Date.now()
+            const MS_PER_DAY = 1000 * 60 * 60 * 24
+            const REMIND_AFTER_DAYS = 5
+            const EXEMPT_USERS = ["ambicuity", "dependabot[bot]", "github-actions[bot]"]
+
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            })
+
+            const drafts = pulls.filter((pr) => pr.draft && !EXEMPT_USERS.includes(pr.user.login))
+
+            for (const pr of drafts) {
+              const daysOpen = (now - new Date(pr.created_at).getTime()) / MS_PER_DAY
+              if (daysOpen < REMIND_AFTER_DAYS) continue
+
+              const comments = await github.rest.issues.listComments({
+                owner,
+                repo,
+                issue_number: pr.number,
+              })
+
+              const alreadyNudged = comments.data.some(
+                (c) => c.user.login === "github-actions[bot]" && c.body.includes("still working on this draft PR")
+              )
+
+              if (alreadyNudged) continue
+
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: pr.number,
+                body: [
+                  `Hi @${pr.user.login}, are you still working on this draft PR?`,
+                  "",
+                  `It has been open for ${Math.floor(daysOpen)} days. If it is ready, click **Ready for review**.",
+                  "If you need more time, leave a quick update comment so the status is clear.",
+                ].join("\n"),
+              })
+            }

@@ -1,0 +1,94 @@
+name: Merge Conflict Detector
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  detect-conflicts:
+    name: Label Conflicted PRs
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check open PRs for merge conflicts
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+
+            const ensureLabel = async (name, color, description) => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name })
+              } catch {
+                await github.rest.issues.createLabel({ owner, repo, name, color, description })
+              }
+            }
+
+            await ensureLabel("merge-conflict", "D93F0B", "PR has merge conflicts with main")
+
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            })
+
+            for (const pr of pulls) {
+              const hasConflictLabel = pr.labels.some((l) => l.name === "merge-conflict")
+
+              const { data: freshPR } = await github.rest.pulls.get({
+                owner,
+                repo,
+                pull_number: pr.number,
+              })
+
+              if (freshPR.mergeable === false) {
+                if (!hasConflictLabel) {
+                  await github.rest.issues.addLabels({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    labels: ["merge-conflict"],
+                  })
+
+                  await github.rest.issues.createComment({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    body: [
+                      `Hi @${pr.user.login}, this PR currently has a merge conflict with \`main\`.`,
+                      "",
+                      "Please rebase and resolve conflicts:",
+                      "```bash",
+                      "git fetch origin",
+                      "git rebase origin/main",
+                      "# resolve conflicts",
+                      "git add .",
+                      "git rebase --continue",
+                      "git push --force-with-lease",
+                      "```",
+                    ].join("\n"),
+                  })
+                }
+              } else if (freshPR.mergeable === true && hasConflictLabel) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    name: "merge-conflict",
+                  })
+                } catch {
+                  // Ignore if already removed
+                }
+              }
+            }

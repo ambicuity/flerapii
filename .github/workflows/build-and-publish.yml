@@ -30,16 +30,23 @@ jobs:
     steps:
       # 先 checkout 完整仓库，后面要用 git 命令找 tag
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       # 决定要 checkout 的 ref（tag 或 commit）
       - name: Determine ref (tag or commit)
         id: get_ref
+        env:
+          INPUT_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || '' }}
+          RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || '' }}
         run: |
           # 优先级：workflow 输入 tag/ref > release tag > 自动找最新 tag
-          REF="${{ github.event.inputs.tag || github.event.inputs.ref || github.event.release.tag_name }}"
+          REF="$INPUT_TAG"
+
+          if [ -z "$REF" ]; then
+            REF="$RELEASE_TAG"
+          fi
 
           if [ "$REF" = "latest" ]; then
             # 特殊值 latest → 使用默认分支最新 commit
@@ -65,7 +72,7 @@ jobs:
       # 3️⃣ Checkout 到指定的 ref（tag 或 commit hash）
       - name: Checkout specific ref
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
         with:
           ref: ${{ steps.get_ref.outputs.ref }}
           fetch-depth: 0 # 确保获取完整历史，以便 tag、commit 都能找到
@@ -96,11 +103,11 @@ jobs:
 
       # 上传 Release Artifact（仅当有 ref 时）
       - name: Upload Release Artifact
-        if: ${{ steps.get_ref.outputs.ref != '' }}
+        if: ${{ github.event_name == 'release' && steps.get_ref.outputs.ref != '' }}
         continue-on-error: true
         run: |
-          echo "Uploading .output/*.zip to release ${{ steps.get_ref.outputs.ref }}"
-          gh release upload "${{ steps.get_ref.outputs.ref }}" .output/*.zip
+          echo "Uploading .output/*.zip to release ${{ github.event.release.tag_name }}"
+          gh release upload "${{ github.event.release.tag_name }}" .output/*.zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

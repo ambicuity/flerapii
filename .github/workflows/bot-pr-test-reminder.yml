@@ -1,0 +1,88 @@
+name: Test Coverage Reminder
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - "src/**"
+      - "plugins/**"
+
+permissions: read-all
+
+jobs:
+  test-reminder:
+    name: Remind About Missing Tests
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for tests alongside source changes
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const pr = context.payload.pull_request
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const EXEMPT_USERS = ["ambicuity", "github-actions[bot]", "dependabot[bot]"]
+
+            if (EXEMPT_USERS.includes(pr.user.login)) return
+
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner,
+              repo,
+              pull_number: pr.number,
+              per_page: 100,
+            })
+
+            const filenames = files.map((f) => f.filename)
+            const touchedSource = filenames.some((f) => f.startsWith("src/") || f.startsWith("plugins/"))
+            const touchedTests = filenames.some(
+              (f) =>
+                f.startsWith("tests/") ||
+                f.startsWith("e2e/") ||
+                f.endsWith(".test.ts") ||
+                f.endsWith(".test.tsx")
+            )
+
+            const comments = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number: pr.number,
+            })
+
+            const marker = "Reminder: Add Tests for Source Changes"
+            const prior = comments.data.find(
+              (c) => c.user.login === "github-actions[bot]" && c.body.includes(marker)
+            )
+
+            if (!touchedSource || touchedTests) {
+              if (prior) {
+                await github.rest.issues.deleteComment({
+                  owner,
+                  repo,
+                  comment_id: prior.id,
+                })
+              }
+              return
+            }
+
+            if (prior) return
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: pr.number,
+              body: [
+                "## Reminder: Add Tests for Source Changes",
+                "",
+                `@${pr.user.login} this PR changes extension source files but no tests were updated.`,
+                "",
+                "Please consider adding or updating:",
+                "- Unit tests under `tests/`",
+                "- E2E checks under `e2e/` when user flows changed",
+                "",
+                "This reminder is non-blocking, but helps prevent regressions.",
+              ].join("\n"),
+            })

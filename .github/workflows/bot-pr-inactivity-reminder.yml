@@ -1,0 +1,90 @@
+name: PR Inactivity Reminder
+
+on:
+  schedule:
+    - cron: "0 9 * * 1"
+  workflow_dispatch:
+
+permissions: read-all
+
+jobs:
+  pr-inactivity:
+    name: Ping Inactive PR Authors
+    permissions:
+      pull-requests: write
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check open PRs for inactivity
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const owner = context.repo.owner
+            const repo = context.repo.repo
+            const now = Date.now()
+            const MS_PER_DAY = 1000 * 60 * 60 * 24
+            const NUDGE_AFTER_DAYS = 7
+            const WARNING_AFTER_DAYS = 14
+            const EXEMPT_USERS = ["ambicuity", "dependabot[bot]", "github-actions[bot]"]
+
+            const ensureLabel = async (name, color, description) => {
+              try {
+                await github.rest.issues.getLabel({ owner, repo, name })
+              } catch {
+                await github.rest.issues.createLabel({ owner, repo, name, color, description })
+              }
+            }
+
+            await ensureLabel("awaiting-response", "FBCA04", "Waiting on contributor response")
+
+            const pulls = await github.paginate(github.rest.pulls.list, {
+              owner,
+              repo,
+              state: "open",
+              per_page: 100,
+            })
+
+            for (const pr of pulls) {
+              if (EXEMPT_USERS.includes(pr.user.login)) continue
+              if (pr.draft) continue
+
+              const daysInactive = (now - new Date(pr.updated_at).getTime()) / MS_PER_DAY
+              const hasLabel = pr.labels.some((l) => l.name === "awaiting-response")
+
+              if (daysInactive >= NUDGE_AFTER_DAYS && daysInactive < WARNING_AFTER_DAYS && !hasLabel) {
+                await github.rest.issues.createComment({
+                  owner,
+                  repo,
+                  issue_number: pr.number,
+                  body: [
+                    `Hi @${pr.user.login}, this PR has been inactive for ${Math.floor(daysInactive)} days.`,
+                    "",
+                    "If you are still working on it:",
+                    "- Rebase on the latest `main`",
+                    "- Address open review comments",
+                    "- Push updates",
+                    "",
+                    "If you need help, leave a comment and I will assist.",
+                  ].join("\n"),
+                })
+
+                await github.rest.issues.addLabels({
+                  owner,
+                  repo,
+                  issue_number: pr.number,
+                  labels: ["awaiting-response"],
+                })
+              } else if (daysInactive < NUDGE_AFTER_DAYS && hasLabel) {
+                try {
+                  await github.rest.issues.removeLabel({
+                    owner,
+                    repo,
+                    issue_number: pr.number,
+                    name: "awaiting-response",
+                  })
+                } catch {
+                  // Ignore if already removed
+                }
+              }
+            }
