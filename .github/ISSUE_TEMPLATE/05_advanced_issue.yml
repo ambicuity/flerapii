@@ -83,9 +83,8 @@ body:
       description: |
         Describe the intended direction or design. Include the high-level approach,
         which components will change, what will NOT change, and key trade-offs.
-        This does not need to be a complete implementation plan — the repository's
-        planning automation can generate a detailed plan when the issue is labeled
-        `plan-me` or someone comments `@coderabbitai plan` / `/plan`.
+        This does not need to be a complete implementation plan — CodeRabbit will
+        generate a detailed plan after this issue is submitted.
       value: |
         Describe the proposed solution here.
     validations:

@@ -39,7 +39,7 @@ Each weekday morning, pick **one open issue** from the backlog and implement a f
 ## Before You Code
 
 1. Read the issue description and all comments carefully
-2. If the issue planning workflow has posted an implementation plan in the issue comments, **follow that plan exactly**
+2. If CodeRabbit (@coderabbitai) has posted an implementation plan in the issue comments, **follow that plan exactly**
 3. If no plan exists, analyze the codebase to understand the change needed
 4. Check `config.yml` for any relevant configuration
 5. Review existing tests in `tests/` for patterns to follow
