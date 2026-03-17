@@ -1,14 +1,14 @@
-name: 部署文档
+name: Deploy Docs
 
 on:
   workflow_dispatch:
   push:
     branches:
       - main
-    paths: # <<<<<< 新增：路径过滤
-      - "docs/docs/**" # 匹配 /docs/docs/ 目录下所有文档内容和配置 (包括 .vuepress/、config.js 等)
-      - "docs/package.json" # 匹配 /docs/package.json 文件 (因为依赖定义在这里)
-      - "docs/pnpm-lock.json" # 匹配 /docs/pnpm-lock.json 文件 (因为依赖版本锁定在这里)
+    paths:
+      - "docs/docs/**" # matches all doc content and config under /docs/docs/ (including .vuepress/, config.js, etc.)
+      - "docs/package.json" # matches /docs/package.json (where dependencies are defined)
+      - "docs/pnpm-lock.json" # matches /docs/pnpm-lock.json (where dependency versions are locked)
 
 permissions:
   contents: write
@@ -18,48 +18,45 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: docs # 所有 run 命令将在此目录下执行
+        working-directory: docs # all run commands execute in this directory
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          # 如果你的文档需要 Git 子模块，取消注释下一行
+          # If your docs require Git submodules, uncomment the next line
           # submodules: true
 
-      - name: 安装 pnpm
+      - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: 设置 Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: pnpm
 
-      - name: 安装依赖
+      - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
-      - name: 构建文档
+      - name: Build docs
         env:
           NODE_OPTIONS: --max_old_space_size=8192
         run: |-
-          # 因为 working-directory 是 docs，所以这里执行的是 docs/package.json 中的 docs:build
-          # 且构建输出在 /docs/docs/.vuepress/dist (相对于仓库根目录)
-          # 或者在当前工作目录 /docs 内的 docs/.vuepress/dist
+          # working-directory is docs, so this runs docs:build from docs/package.json
+          # build output is at docs/docs/.vuepress/dist (relative to repo root)
           pnpm run docs:build
-          # 创建 .nojekyll 文件，防止 GitHub Pages 尝试解析 Jekyll
-          # 该文件将位于 /docs/docs/.vuepress/dist/.nojekyll
+          # create .nojekyll to prevent GitHub Pages from processing Jekyll
           > docs/.vuepress/dist/.nojekyll
-          # 配置 GitHub Pages 自定义域名
+          # configure custom domain for GitHub Pages
           echo "flerapii.riteshrana.engineer" > docs/.vuepress/dist/CNAME
 
-      - name: 部署文档
+      - name: Deploy docs
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages # 部署到的目标分支
-          # 指定要部署的文件夹。相对于 GitHub 仓库根目录。
-          # 您的 VitePress 文档内容在 /docs/docs/ 下，构建输出通常在 /docs/docs/.vuepress/dist
+          branch: gh-pages # target branch to deploy to
+          # the folder to deploy, relative to the repository root
           folder: docs/docs/.vuepress/dist

@@ -88,41 +88,6 @@ For the full compatibility list and export tool list, see:
 > [!NOTE]
 > Data format remains compatible with various management tools for direct import.
 
-## Interface Preview
-
-<table>
-  <tr>
-    <td align="center">
-      <img src="docs/docs/static/image/account-manage.png" alt="Account Management" style="width:100%; height:auto;"/>
-      <div>Account Management Overview</div>
-    </td>
-    <td align="center">
-      <img src="docs/docs/static/image/model-list.png" alt="Model List" style="width:100%; height:auto;"/>
-      <div>Model List and Pricing</div>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/docs/static/image/api-key-list.png" alt="API Key List" style="width:100%; height:auto;"/>
-      <div>Key List and Export</div>
-    </td>
-    <td align="center">
-      <img src="docs/docs/static/image/auto-check-in.png" alt="Auto Check-In" style="width:100%; height:auto;"/>
-      <div>Automated Check-In</div>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="docs/docs/static/image/account-model-usage-overview.png" alt="Usage Overview" style="width:100%; height:auto;"/>
-      <div>Account Model Usage</div>
-    </td>
-    <td align="center">
-      <img src="docs/docs/static/image/account-model-latency-overview.png" alt="Latency Overview" style="width:100%; height:auto;"/>
-      <div>Model Latency Analysis</div>
-    </td>
-  </tr>
-</table>
-
 ## Installation
 
 | Channel | Link | Version |
