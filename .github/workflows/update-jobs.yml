@@ -1,0 +1,97 @@
+name: Update New Grad Jobs
+
+on:
+  # Run every 5 minutes
+  schedule:
+    - cron: '*/5 * * * *'
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Only run on push when scraper inputs/config change.
+  # This avoids self-trigger loops from workflow commits to generated docs files on main.
+  push:
+    branches: [main]
+    paths:
+      - scripts/update_jobs.py
+      - config.yml
+      - requirements.txt
+
+# Prevent concurrent executions of the same workflow
+concurrency:
+  group: update-jobs
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+jobs:
+  update-jobs:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6.2.0
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run job scraper
+        run: |
+          cd scripts
+          python update_jobs.py
+
+      - name: Sanity check — verify job output is non-empty
+        run: |
+          JOB_COUNT=$(python -c "import json; data=json.load(open('docs/jobs.json')); print(data['meta']['total_jobs'])")
+          echo "Job count: $JOB_COUNT"
+          if [ "$JOB_COUNT" -eq 0 ]; then
+            echo "::error::Sanity check failed: jobs.json contains 0 jobs. Aborting commit."
+            exit 1
+          fi
+
+      - name: Commit and push changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Pull-rebase BEFORE staging, using autostash because the scraper
+          # just modified the files in the working directory (making it dirty).
+          git config pull.rebase true
+          git pull origin main --autostash
+
+          git add docs/jobs.json docs/market-history.json docs/health.json docs/feed.xml
+          if [ -f "docs/predictions.json" ]; then
+            git add docs/predictions.json
+          fi
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+            exit 0
+          fi
+          git commit -m "🤖 Update job listings [skip ci]"
+
+          # Push-only retry loop (rebase already done above).
+          for attempt in 1 2 3; do
+            if git push origin HEAD:main; then
+              echo "✅ Push succeeded on attempt ${attempt}"
+              exit 0
+            fi
+            echo "Push rejected on attempt ${attempt} (concurrent write race), retrying..."
+            # Another concurrent scraper may have pushed; fast-forward and retry.
+            git fetch origin main
+            git rebase origin/main
+            sleep 5
+          done
+          echo "::error::Failed to push updated job listings after 3 attempts."
+          exit 1

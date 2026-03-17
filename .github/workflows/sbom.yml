@@ -1,0 +1,31 @@
+name: SBOM Generator
+
+on:
+  push:
+    branches:
+      - main
+  release:
+    types: [published]
+  schedule:
+    - cron: '0 0 * * *' # Daily at midnight UTC
+
+permissions: read-all
+jobs:
+  generate-sbom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@57aae528053a48a3f6235f2d9461b05fbcb7366d # v0
+        with:
+          path: ./
+          format: spdx-json
+          output-file: flerapii-sbom.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
+        with:
+          name: sbom
+          path: flerapii-sbom.spdx.json
