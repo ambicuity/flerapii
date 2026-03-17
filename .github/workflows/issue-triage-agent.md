@@ -47,7 +47,7 @@ Apply ONE primary label from this list:
 | `good first issue candidate` | Simple, self-contained changes suitable for newcomers (the maintainer will promote to `good first issue` after review) |
 | `help wanted` | Complex or time-consuming issue that would benefit from community help |
 | `needs-triage` | Unclear or ambiguous — needs maintainer clarification before labeling |
-| `plan-me` | Issue is clear and actionable — CodeRabbit should generate an implementation plan |
+| `plan-me` | Issue is clear and actionable — the issue planning workflow should generate an implementation plan |
 
 ## Skip Rules
 

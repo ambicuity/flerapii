@@ -83,7 +83,7 @@ body:
 
         **Before claiming:**
         - Check the issue labels to see what area this touches
-        - Review the CodeRabbit AI plan (posted as a comment) for a rough implementation overview
+        - If the issue has a `plan-me` label or someone comments `@coderabbitai plan` / `/plan`, review the automation-generated implementation plan comment for a rough implementation overview
         - If this feels like too big a step, try a Good First Issue first
     validations:
       required: true

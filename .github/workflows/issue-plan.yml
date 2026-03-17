@@ -1,0 +1,212 @@
+name: Issue Planning
+
+on:
+  issue_comment:
+    types: [created]
+  issues:
+    types: [opened, reopened, labeled]
+
+permissions: read-all
+
+concurrency:
+  group: issue-plan-${{ github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  plan:
+    name: Create Implementation Plan
+    if: ${{ !github.event.issue.pull_request }}
+    permissions:
+      issues: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create or update plan comment
+        uses: actions/github-script@ed597411d8f924073f98dfc5c65a23a2325f34cd # v8
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issueNumber = context.payload.issue.number;
+            const marker = '<!-- issue-plan-automation -->';
+
+            const shouldHandleComment = () => {
+              if (context.eventName !== 'issue_comment') return false;
+              const body = context.payload.comment?.body ?? '';
+              return /(^\/plan\b)|(@coderabbitai\s+plan\b)/i.test(body);
+            };
+
+            const shouldHandleIssue = async () => {
+              if (context.eventName !== 'issues') return false;
+
+              if (context.payload.action === 'labeled') {
+                return context.payload.label?.name === 'plan-me';
+              }
+
+              const { data: issue } = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: issueNumber,
+              });
+
+              return issue.labels.some((label) => {
+                const name = typeof label === 'string' ? label : label.name;
+                return name === 'plan-me';
+              });
+            };
+
+            const commentTriggered = shouldHandleComment();
+            const issueTriggered = await shouldHandleIssue();
+
+            if (!commentTriggered && !issueTriggered) {
+              core.info('No supported planning trigger detected.');
+              return;
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber,
+            });
+
+            const labelNames = issue.labels.map((label) =>
+              typeof label === 'string' ? label : label.name,
+            );
+
+            if (!labelNames.includes('plan-me')) {
+              await github.rest.issues.addLabels({
+                owner,
+                repo,
+                issue_number: issueNumber,
+                labels: ['plan-me'],
+              });
+            }
+
+            const body = issue.body ?? '';
+            const title = issue.title ?? '';
+
+            const codeRefs = [
+              ...new Set(
+                [...body.matchAll(/`([^`\n]+\.[A-Za-z0-9]+)`/g)]
+                  .map((match) => match[1])
+                  .filter((value) =>
+                    /^(src|tests|docs|\.github|e2e|scripts)\//.test(value),
+                  ),
+              ),
+            ];
+
+            const acceptanceItems = [
+              ...body.matchAll(/- \[ \] (.+)/g),
+            ].map((match) => match[1].trim());
+
+            const areaMatch = body.match(
+              /Which area does this touch\?\s*\n([^\n]+)/i,
+            );
+            const area = areaMatch?.[1]?.trim() || 'Not specified';
+
+            const difficulty =
+              labelNames.find((name) =>
+                ['good first issue', 'beginner', 'intermediate', 'advanced'].includes(name),
+              ) ?? 'unlabeled';
+
+            const buildSteps = () => {
+              if (labelNames.includes('documentation')) {
+                return [
+                  'Review the referenced templates/docs and identify stale or inconsistent wording.',
+                  'Update the affected markdown or issue form files while preserving existing structure and labels.',
+                  'Validate that examples, commands, and contributor guidance match this repository.',
+                ];
+              }
+
+              if (labelNames.includes('ci-cd')) {
+                return [
+                  'Inspect the existing workflows, triggers, permissions, and job dependencies for the affected area.',
+                  'Design the smallest workflow change that satisfies the issue without reducing security or signal quality.',
+                  'Validate the new workflow behavior against the repository\'s current CI conventions.',
+                ];
+              }
+
+              if (labelNames.includes('testing') || labelNames.includes('tests') || labelNames.includes('security')) {
+                return [
+                  'Inspect the referenced implementation files and existing related tests to understand the current behavior.',
+                  'Add or expand deterministic tests that cover the acceptance criteria and the likely edge cases.',
+                  'Run the repository validation commands and iterate on any failures directly related to the change.',
+                ];
+              }
+
+              return [
+                'Inspect the referenced files and surrounding code to understand the current behavior and constraints.',
+                'Implement the smallest coherent change that satisfies the issue description and acceptance criteria.',
+                'Run the relevant validation commands and update any directly affected tests or docs.',
+              ];
+            };
+
+            const filesSection = codeRefs.length
+              ? codeRefs.map((value) => `- \`${value}\``).join('\n')
+              : '- No explicit file references were detected in the issue body.';
+
+            const acceptanceSection = acceptanceItems.length
+              ? acceptanceItems.map((value) => `- ${value}`).join('\n')
+              : '- Confirm the implementation matches the issue description.';
+
+              const steps = buildSteps();
+              const planBody = [
+                marker,
+                '### 🤖 Implementation Plan',
+                '',
+                `Triggered by ${commentTriggered ? '`@coderabbitai plan` or `/plan`' : 'the `plan-me` label'}.`,
+                '',
+                `**Issue:** ${title}`,
+                `**Difficulty:** ${difficulty}`,
+                `**Area:** ${area}`,
+                '',
+                '### Suggested Approach',
+                `1. ${steps[0]}`,
+                `2. ${steps[1]}`,
+                `3. ${steps[2]}`,
+                `4. Link the PR back with \`Fixes #${issueNumber}\` and keep the PR title in Conventional Commits format.`,
+                '',
+                '### Files To Inspect First',
+                filesSection,
+                '',
+                '### Acceptance Checklist To Validate',
+                acceptanceSection,
+                '',
+                '### Recommended Validation',
+                '- \`pnpm test\`',
+                '- \`pnpm compile\`',
+                '- Run any narrower targeted test file(s) that cover the changed area first if available.',
+                '',
+                '*Posted automatically by the repo issue planning workflow.*',
+              ].join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner,
+              repo,
+              issue_number: issueNumber,
+              per_page: 100,
+            });
+
+            const existing = comments.find(
+              (comment) =>
+                comment.user?.login === 'github-actions[bot]' &&
+                comment.body?.includes(marker),
+            );
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: planBody,
+              });
+              core.info(`Updated existing plan comment ${existing.id}.`);
+              return;
+            }
+
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: issueNumber,
+              body: planBody,
+            });
+            core.info('Created new implementation plan comment.');
