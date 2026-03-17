@@ -2,8 +2,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import { initializeServices } from "~/entrypoints/background/servicesInit"
 
-type InitMock = ReturnType<typeof vi.fn>
-
 const {
   usageInitMock,
   webdavInitMock,
@@ -75,22 +73,22 @@ describe("initializeServices alarm bootstrap ordering", () => {
       resolveI18n = () => resolve()
     })
 
-    const usageInit: InitMock = vi.fn(async () => {
+    const usageInit = vi.fn(async () => {
       alarmInitCalled.usageHistory = true
     })
-    const webdavInit: InitMock = vi.fn(async () => {
+    const webdavInit = vi.fn(async () => {
       alarmInitCalled.webdav = true
     })
-    const modelSyncInit: InitMock = vi.fn(async () => {
+    const modelSyncInit = vi.fn(async () => {
       alarmInitCalled.modelSync = true
     })
-    const autoCheckinInit: InitMock = vi.fn(async () => {
+    const autoCheckinInit = vi.fn(async () => {
       alarmInitCalled.autoCheckin = true
     })
 
-    const modelMetadataInit: InitMock = vi.fn(async () => {})
-    const autoRefreshInit: InitMock = vi.fn(async () => {})
-    const redemptionAssistInit: InitMock = vi.fn(async () => {})
+    const modelMetadataInit = vi.fn(async () => {})
+    const autoRefreshInit = vi.fn(async () => {})
+    const redemptionAssistInit = vi.fn(async () => {})
 
     usageInitMock.mockImplementation(usageInit)
     webdavInitMock.mockImplementation(webdavInit)

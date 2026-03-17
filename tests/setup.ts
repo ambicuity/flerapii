@@ -99,6 +99,21 @@ globalAny.browser.runtime.getManifest = vi.fn(() => ({
   optional_permissions: ["cookies", "declarativeNetRequestWithHostAccess"],
 }))
 
+// @webext-core/fake-browser does not implement permissions.onAdded/onRemoved event
+// listeners. cookieInterceptor.ts calls chrome.permissions.onAdded.addListener at
+// runtime; replacing the throwing stubs with no-ops prevents test failures in any
+// test that imports the background entrypoint.
+if (globalAny.chrome?.permissions?.onAdded) {
+  globalAny.chrome.permissions.onAdded.addListener = vi.fn()
+  globalAny.chrome.permissions.onAdded.removeListener = vi.fn()
+  globalAny.chrome.permissions.onAdded.hasListener = vi.fn(() => false)
+}
+if (globalAny.chrome?.permissions?.onRemoved) {
+  globalAny.chrome.permissions.onRemoved.addListener = vi.fn()
+  globalAny.chrome.permissions.onRemoved.removeListener = vi.fn()
+  globalAny.chrome.permissions.onRemoved.hasListener = vi.fn(() => false)
+}
+
 globalAny.IntersectionObserver = class IntersectionObserver {
   disconnect() {}
   observe() {}

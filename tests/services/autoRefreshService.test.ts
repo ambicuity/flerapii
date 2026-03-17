@@ -6,6 +6,7 @@ import {
   expect,
   it,
   vi,
+  type Mock,
 } from "vitest"
 
 import { RuntimeActionIds } from "~/constants/runtimeActions"
@@ -350,10 +351,10 @@ describe("AutoRefreshService", () => {
 })
 
 describe("handleAutoRefreshMessage", () => {
-  let mockSendResponse: ReturnType<typeof vi.fn>
+  let mockSendResponse: Mock<(response: any) => void>
 
   beforeEach(() => {
-    mockSendResponse = vi.fn()
+    mockSendResponse = vi.fn<(response: any) => void>()
     vi.clearAllMocks()
     autoRefreshService.destroy()
   })
