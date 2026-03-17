@@ -20,7 +20,7 @@ jobs:
     steps:
       - name: Download PR build metadata
         # This workflow runs in the base repository context, so it can comment on PRs even for fork builds.
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: pr-build-metadata
           run-id: ${{ github.event.workflow_run.id }}
