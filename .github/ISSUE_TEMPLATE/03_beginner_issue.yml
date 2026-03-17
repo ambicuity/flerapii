@@ -14,7 +14,6 @@ body:
 
         If a step-by-step recipe would suffice, it belongs in a Good First Issue.
         If it requires understanding multiple interacting systems, it belongs in Intermediate.
-
         ---
 
   - type: textarea
@@ -31,7 +30,7 @@ body:
         - Write or extend tests
 
         **Difficulty:**
-        - Basic Python (reading and writing functions) required
+        - Basic TypeScript/JavaScript (reading and writing functions) required
         - No external API experience needed
         - Familiarity with the contribution workflow expected
 
@@ -44,8 +43,8 @@ body:
         > [!TIP]
         > **You should be comfortable with:**
         > - Forking, branching, committing, and opening a PR without a tutorial
-        > - Reading Python code you did not write and following its patterns
-        > - Running `make test` and fixing failures before pushing
+        > - Reading TypeScript code you did not write and following its patterns
+        > - Running `pnpm test` and fixing failures before pushing
         > - Rebasing onto `main` to resolve merge conflicts
         > - Looking things up on your own before asking for help
         >
@@ -54,15 +53,13 @@ body:
         > first. You can always come back.
 
         **Support:** The maintainer actively monitors this issue and will respond to questions.
-
         ⏱️ Typical time to complete: 2–4 hours
         🧩 Difficulty: Requires investigation and testing
         🎓 Best for: Contributors ready to work past copy-paste solutions
 
         ---
-
         🏁 **When this issue is complete, you will have:**
-        - ✅ Improved your knowledge of the `update_jobs.py` codebase
+        - ✅ Improved your knowledge of the Flerapii extension codebase
         - ✅ Owned an implementation decision
         - ✅ Written or extended tests
     validations:
@@ -73,17 +70,15 @@ body:
     attributes:
       label: "👾 Description of the Issue"
       description: |
-        Describe what needs to change and why. Include which file(s) to look at,
-        what the current behavior is, and what the desired behavior is.
-        Do NOT write a step-by-step recipe — point contributors toward the right area
-        and let them figure out the approach.
+        Describe what needs to change and why. Include which file(s) to look at, what the current
+        behavior is, and what the desired behavior is. Do NOT write a step-by-step recipe — point
+        contributors toward the right area and let them figure out the approach.
         Provide enough context so contributors can judge whether they are ready for this.
       value: |
         _Replace this with the task description._
 
         **Before claiming:**
         - Check the issue labels to see what area this touches
-        - Review the CodeRabbit AI plan (posted as a comment) for a rough implementation overview
         - If this feels like too big a step, try a Good First Issue first
     validations:
       required: true
@@ -95,10 +90,10 @@ body:
       description: What must be true for this issue to be considered complete?
       value: |
         - [ ] The change is implemented in the correct file/function
-        - [ ] Edge cases are handled (None, empty string, NaN, Unicode)
-        - [ ] All existing tests pass (`make test`)
+        - [ ] Edge cases are handled (undefined, empty string, null)
+        - [ ] All existing tests pass (`pnpm test`)
         - [ ] New tests are added covering the changed behavior
-        - [ ] PR is linked to this issue with `Fixes #<number>`
+        - [ ] PR is linked to this issue with `Fixes #`
         - [ ] PR title follows Conventional Commits format
     validations:
       required: true
@@ -108,13 +103,13 @@ body:
     attributes:
       label: "🏗️ Which area does this touch?"
       options:
-        - "🤖 Core scraper (scripts/update_jobs.py)"
-        - "⚙️ Configuration (config.yml)"
-        - "🌐 Frontend / website (docs/)"
-        - "🔁 GitHub Actions / CI-CD (.github/workflows/)"
-        - "🧪 Tests (tests/)"
-        - "📚 Documentation (*.md, docs/wiki/)"
-        - "🏷️ Company data / classification"
+        - "🧩 Extension logic (src/)"
+        - "⚙️ Configuration (src/config/)"
+        - "🌐 Popup / UI (src/entrypoints/popup/)"
+        - "🔁 Background service worker (src/background/)"
+        - "🧪 Tests (tests/ or e2e/)"
+        - "📚 Documentation (*.md, docs/)"
+        - "🛠️ Tooling / CI-CD (.github/workflows/)"
         - "Other"
     validations:
       required: true
