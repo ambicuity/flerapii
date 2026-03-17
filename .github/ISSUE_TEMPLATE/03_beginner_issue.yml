@@ -106,10 +106,10 @@ body:
         - "🧩 Extension logic (src/)"
         - "⚙️ Configuration (src/config/)"
         - "🌐 Popup / UI (src/entrypoints/popup/)"
-        - "🔁 Background service worker (src/background/)"
+        - "🔁 Background service worker (src/entrypoints/background/)"
         - "🧪 Tests (tests/ or e2e/)"
         - "📚 Documentation (*.md, docs/)"
-        - "🛠️ Tooling / CI-CD (.github/workflows/)"
+        - "🛠️ Tooling / CI/CD (.github/workflows/)"
         - "Other"
     validations:
       required: true

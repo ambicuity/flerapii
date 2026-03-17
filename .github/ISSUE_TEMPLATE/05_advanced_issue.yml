@@ -26,7 +26,7 @@ body:
 
         - Understanding the full extension data flow
         - Reading and modifying background service worker logic
-        - Navigating src/background/, src/entrypoints/, and src/composables/
+        - Navigating src/entrypoints/, src/features/, and src/services/
         - Reasoning about API contract changes (New API providers)
         - Writing rigorous, deterministic tests without live network calls (pnpm test)
         - Ensuring pnpm lint and pnpm compile and pnpm build all pass
@@ -35,7 +35,7 @@ body:
         > **You must be assigned before starting** - comment /assign to claim this issue.
         > PRs submitted without a prior assignment will be closed.
 
-        New contributors should start with Good First Issues or Beginner Issues first.
+        New contributors should start with [Good First Issues](https://github.com/ambicuity/flerapii/issues?q=is%3Aissue+state%3Aopen+label%3A%22good+first+issue%22+no%3Aassignee) or [Beginner Issues](https://github.com/ambicuity/flerapii/issues?q=is%3Aissue+state%3Aopen+label%3Abeginner+no%3Aassignee) first.
     validations:
       required: false
 
@@ -43,7 +43,7 @@ body:
     attributes:
       value: |
         > [!WARNING]
-        > ### What we consider an Advanced Issue in this repo
+        > ### 🧭 What we consider an Advanced Issue in this repo
         >
         > This issue typically:
         > - Requires deep understanding of the extension architecture
@@ -88,7 +88,7 @@ body:
         - [ ] Async safety is preserved (no unhandled promise rejections or race conditions)
         - [ ] All edge cases handled: undefined, null, empty string, malformed API responses
         - [ ] All existing tests pass (`pnpm test`)
-        - [ ] New tests added for every changed code path (deterministic - no live network calls)
+        - [ ] New tests added for every changed code path (deterministic — no live network calls)
         - [ ] `pnpm lint && pnpm compile` passes
         - [ ] `pnpm build` completes successfully
         - [ ] Stored data schema remains backward compatible
@@ -105,10 +105,10 @@ body:
         - "🧩 Extension logic (src/)"
         - "⚙️ Configuration (src/config/)"
         - "🌐 Popup / UI (src/entrypoints/popup/)"
-        - "🔁 Background service worker (src/background/)"
+        - "🔁 Background service worker (src/entrypoints/background/)"
         - "🧪 Tests (tests/ or e2e/)"
         - "📚 Documentation (*.md, docs/)"
-        - "🛠️ Tooling / CI-CD (.github/workflows/)"
+        - "🛠️ Tooling / CI/CD (.github/workflows/)"
         - "Other"
     validations:
       required: true
@@ -119,6 +119,6 @@ body:
       label: "🔗 Additional Context"
       description: Links to relevant code, API docs, related functions, or error logs.
       placeholder: |
-        - Function: fetchBalance() at src/background/index.ts
-        - Related: checkIn() at src/background/checkin.ts
+        - Function: fetchBalance() at src/entrypoints/background/index.ts
+        - Related: autoCheckin scheduler at src/services/checkin/autoCheckin/scheduler.ts
         - Prior discussion: #42

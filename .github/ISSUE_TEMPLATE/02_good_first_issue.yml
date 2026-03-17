@@ -63,7 +63,7 @@ body:
         > #### 📋 What makes a Good First Issue in this repo?
         >
         > **Often a good fit:**
-        > - Adding a missing provider to `src/config/` (e.g. a new New API endpoint)
+        > - Adding a missing provider to `src/config/` (e.g. a new API endpoint)
         > - Fixing a label or keyword in a UI component
         > - Correcting a typo or broken link in documentation
         > - Adding a test case for an existing, already-working function
