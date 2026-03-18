@@ -3,7 +3,7 @@
   "displayName": "Flerapii",
   "private": true,
   "type": "module",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Manage New API-compatible relay accounts: view balances, auto check-ins, export keys, validate APIs, and sync channels.",
   "author": "Ritesh Rana <contact@riteshrana.engineer>",
   "repository": {
