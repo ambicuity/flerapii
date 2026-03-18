@@ -25,12 +25,17 @@ describe("background applyActionClickBehavior", () => {
 
     vi.resetModules()
 
-    vi.doMock("~/utils/browser/browserApi", () => ({
-      addActionClickListener,
-      getSidePanelSupport,
-      removeActionClickListener,
-      setActionPopup,
-    }))
+    vi.doMock("~/utils/browser/browserApi", async (importOriginal) => {
+      const actual =
+        await importOriginal<typeof import("~/utils/browser/browserApi")>()
+      return {
+        ...actual,
+        addActionClickListener,
+        getSidePanelSupport,
+        removeActionClickListener,
+        setActionPopup,
+      }
+    })
 
     vi.doMock("~/utils/navigation", () => ({
       openSidePanelWithFallback,
@@ -52,9 +57,8 @@ describe("background applyActionClickBehavior", () => {
       reason: "missing",
     })
 
-    const { applyActionClickBehavior } = await import(
-      "~/entrypoints/background/actionClickBehavior"
-    )
+    const { applyActionClickBehavior } =
+      await import("~/entrypoints/background/actionClickBehavior")
 
     await applyActionClickBehavior("sidepanel")
 
@@ -72,9 +76,8 @@ describe("background applyActionClickBehavior", () => {
       kind: "chromium-side-panel",
     })
 
-    const { applyActionClickBehavior } = await import(
-      "~/entrypoints/background/actionClickBehavior"
-    )
+    const { applyActionClickBehavior } =
+      await import("~/entrypoints/background/actionClickBehavior")
 
     await applyActionClickBehavior("sidepanel")
 
@@ -92,9 +95,8 @@ describe("background applyActionClickBehavior", () => {
       kind: "firefox-sidebar-action",
     })
 
-    const { applyActionClickBehavior } = await import(
-      "~/entrypoints/background/actionClickBehavior"
-    )
+    const { applyActionClickBehavior } =
+      await import("~/entrypoints/background/actionClickBehavior")
 
     await applyActionClickBehavior("sidepanel")
 
@@ -112,9 +114,8 @@ describe("background applyActionClickBehavior", () => {
       kind: "chromium-side-panel",
     })
 
-    const { applyActionClickBehavior } = await import(
-      "~/entrypoints/background/actionClickBehavior"
-    )
+    const { applyActionClickBehavior } =
+      await import("~/entrypoints/background/actionClickBehavior")
 
     await applyActionClickBehavior("sidepanel")
 

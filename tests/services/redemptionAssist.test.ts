@@ -1,7 +1,16 @@
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { RuntimeActionIds } from "~/constants/runtimeActions"
 import { DEFAULT_PREFERENCES } from "~/services/preferences/userPreferences"
+
+const mocks = vi.hoisted(() => ({
+  convertToDisplayData: vi.fn(),
+  getAccountById: vi.fn(),
+  getAllAccounts: vi.fn(),
+  getPreferences: vi.fn(),
+  redeemCodeForAccount: vi.fn(),
+  refreshAccount: vi.fn(),
+}))
 
 vi.mock("~/services/preferences/userPreferences", async (importOriginal) => {
   const actual =
@@ -11,27 +20,55 @@ vi.mock("~/services/preferences/userPreferences", async (importOriginal) => {
   return {
     ...actual,
     userPreferences: {
-      getPreferences: vi.fn(),
+      getPreferences: mocks.getPreferences,
     },
   }
 })
 
+vi.mock("~/services/accounts/accountStorage", () => ({
+  accountStorage: {
+    convertToDisplayData: mocks.convertToDisplayData,
+    getAccountById: mocks.getAccountById,
+    getAllAccounts: mocks.getAllAccounts,
+    refreshAccount: mocks.refreshAccount,
+  },
+}))
+
+vi.mock("~/services/redemption/redeemService", () => ({
+  redeemService: {
+    redeemCodeForAccount: mocks.redeemCodeForAccount,
+  },
+}))
+
+beforeEach(() => {
+  vi.resetModules()
+
+  mocks.convertToDisplayData.mockReset()
+  mocks.getAccountById.mockReset()
+  mocks.getAllAccounts.mockReset()
+  mocks.getPreferences.mockReset()
+  mocks.redeemCodeForAccount.mockReset()
+  mocks.refreshAccount.mockReset()
+
+  mocks.convertToDisplayData.mockReturnValue([])
+  mocks.getAccountById.mockResolvedValue(null)
+  mocks.getAllAccounts.mockResolvedValue([])
+  mocks.getPreferences.mockResolvedValue(DEFAULT_PREFERENCES)
+  mocks.redeemCodeForAccount.mockResolvedValue({
+    success: true,
+    message: "ok",
+  })
+  mocks.refreshAccount.mockResolvedValue({ refreshed: true })
+})
+
 afterEach(() => {
-  vi.doUnmock("~/services/accounts/accountStorage")
-  vi.doUnmock("~/services/redemption/redeemService")
   vi.resetModules()
   vi.restoreAllMocks()
 })
 
 describe("redemptionAssist shouldPrompt batch filtering", () => {
   it("returns only prompt-eligible codes for a url", async () => {
-    vi.resetModules()
-    const { userPreferences } = await import(
-      "~/services/preferences/userPreferences"
-    )
-    const getPreferencesMock = vi.mocked(userPreferences.getPreferences)
-
-    getPreferencesMock.mockResolvedValue({
+    mocks.getPreferences.mockResolvedValue({
       ...DEFAULT_PREFERENCES,
       redemptionAssist: {
         enabled: true,
@@ -49,9 +86,8 @@ describe("redemptionAssist shouldPrompt batch filtering", () => {
       },
     })
 
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const validHex = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
     const invalidHex = "g1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6"
@@ -78,28 +114,14 @@ describe("redemptionAssist shouldPrompt batch filtering", () => {
 
 describe("redemptionAssist post-redeem refresh", () => {
   it("refreshes account after successful auto redeem (explicit account)", async () => {
-    vi.resetModules()
+    mocks.refreshAccount.mockResolvedValue({ refreshed: true })
+    mocks.redeemCodeForAccount.mockResolvedValue({
+      success: true,
+      message: "ok",
+    })
 
-    const refreshAccount = vi.fn().mockResolvedValue({ refreshed: true })
-    const redeemCodeForAccount = vi
-      .fn()
-      .mockResolvedValue({ success: true, message: "ok" })
-
-    vi.doMock("~/services/accounts/accountStorage", () => ({
-      accountStorage: {
-        refreshAccount,
-      },
-    }))
-
-    vi.doMock("~/services/redemption/redeemService", () => ({
-      redeemService: {
-        redeemCodeForAccount,
-      },
-    }))
-
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const sendResponse = vi.fn()
 
@@ -113,8 +135,10 @@ describe("redemptionAssist post-redeem refresh", () => {
       sendResponse,
     )
 
-    expect(redeemCodeForAccount).toHaveBeenCalledWith("acc_1", "CODE_1")
-    expect(refreshAccount).toHaveBeenCalledWith("acc_1", true)
+    expect(mocks.redeemCodeForAccount).toHaveBeenCalledWith("acc_1", "CODE_1")
+    await vi.waitFor(() => {
+      expect(mocks.refreshAccount).toHaveBeenCalledWith("acc_1", true)
+    })
     expect(sendResponse).toHaveBeenCalledWith({
       success: true,
       data: { success: true, message: "ok" },
@@ -122,18 +146,12 @@ describe("redemptionAssist post-redeem refresh", () => {
   })
 
   it("refreshes account after successful auto redeem by url (inferred account)", async () => {
-    vi.resetModules()
-
-    const { userPreferences } = await import(
-      "~/services/preferences/userPreferences"
-    )
-    const getPreferencesMock = vi.mocked(userPreferences.getPreferences)
-    getPreferencesMock.mockResolvedValue(DEFAULT_PREFERENCES)
-
-    const refreshAccount = vi.fn().mockResolvedValue({ refreshed: true })
-    const redeemCodeForAccount = vi
-      .fn()
-      .mockResolvedValue({ success: true, message: "ok" })
+    mocks.getPreferences.mockResolvedValue(DEFAULT_PREFERENCES)
+    mocks.refreshAccount.mockResolvedValue({ refreshed: true })
+    mocks.redeemCodeForAccount.mockResolvedValue({
+      success: true,
+      message: "ok",
+    })
 
     const displayAccount = {
       id: "acc_2",
@@ -145,23 +163,11 @@ describe("redemptionAssist post-redeem refresh", () => {
       },
     }
 
-    vi.doMock("~/services/accounts/accountStorage", () => ({
-      accountStorage: {
-        refreshAccount,
-        getAllAccounts: vi.fn().mockResolvedValue([]),
-        convertToDisplayData: vi.fn().mockReturnValue([displayAccount]),
-      },
-    }))
+    mocks.getAllAccounts.mockResolvedValue([])
+    mocks.convertToDisplayData.mockReturnValue([displayAccount])
 
-    vi.doMock("~/services/redemption/redeemService", () => ({
-      redeemService: {
-        redeemCodeForAccount,
-      },
-    }))
-
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const sendResponse = vi.fn()
 
@@ -175,8 +181,10 @@ describe("redemptionAssist post-redeem refresh", () => {
       sendResponse,
     )
 
-    expect(redeemCodeForAccount).toHaveBeenCalledWith("acc_2", "CODE_2")
-    expect(refreshAccount).toHaveBeenCalledWith("acc_2", true)
+    expect(mocks.redeemCodeForAccount).toHaveBeenCalledWith("acc_2", "CODE_2")
+    await vi.waitFor(() => {
+      expect(mocks.refreshAccount).toHaveBeenCalledWith("acc_2", true)
+    })
     expect(sendResponse).toHaveBeenCalledWith({
       success: true,
       data: {
@@ -188,28 +196,14 @@ describe("redemptionAssist post-redeem refresh", () => {
   })
 
   it("swallows refresh failures and still reports redemption success", async () => {
-    vi.resetModules()
+    mocks.refreshAccount.mockRejectedValue(new Error("refresh boom"))
+    mocks.redeemCodeForAccount.mockResolvedValue({
+      success: true,
+      message: "ok",
+    })
 
-    const refreshAccount = vi.fn().mockRejectedValue(new Error("refresh boom"))
-    const redeemCodeForAccount = vi
-      .fn()
-      .mockResolvedValue({ success: true, message: "ok" })
-
-    vi.doMock("~/services/accounts/accountStorage", () => ({
-      accountStorage: {
-        refreshAccount,
-      },
-    }))
-
-    vi.doMock("~/services/redemption/redeemService", () => ({
-      redeemService: {
-        redeemCodeForAccount,
-      },
-    }))
-
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const sendResponse = vi.fn()
 
@@ -223,7 +217,9 @@ describe("redemptionAssist post-redeem refresh", () => {
       sendResponse,
     )
 
-    expect(refreshAccount).toHaveBeenCalledWith("acc_3", true)
+    await vi.waitFor(() => {
+      expect(mocks.refreshAccount).toHaveBeenCalledWith("acc_3", true)
+    })
     expect(sendResponse).toHaveBeenCalledWith({
       success: true,
       data: { success: true, message: "ok" },
@@ -231,34 +227,25 @@ describe("redemptionAssist post-redeem refresh", () => {
   })
 
   it("awaits refresh before responding", async () => {
-    vi.resetModules()
-
+    let markRefreshStarted: (() => void) | undefined
+    const refreshStarted = new Promise<void>((resolve) => {
+      markRefreshStarted = resolve
+    })
     let resolveRefresh: ((value: { refreshed: true }) => void) | undefined
-    const refreshAccount = vi.fn(
+    mocks.refreshAccount.mockImplementation(
       () =>
         new Promise<{ refreshed: true }>((resolve) => {
+          markRefreshStarted?.()
           resolveRefresh = resolve
         }),
     )
-    const redeemCodeForAccount = vi
-      .fn()
-      .mockResolvedValue({ success: true, message: "ok" })
+    mocks.redeemCodeForAccount.mockResolvedValue({
+      success: true,
+      message: "ok",
+    })
 
-    vi.doMock("~/services/accounts/accountStorage", () => ({
-      accountStorage: {
-        refreshAccount,
-      },
-    }))
-
-    vi.doMock("~/services/redemption/redeemService", () => ({
-      redeemService: {
-        redeemCodeForAccount,
-      },
-    }))
-
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const sendResponse = vi.fn()
 
@@ -272,8 +259,8 @@ describe("redemptionAssist post-redeem refresh", () => {
       sendResponse,
     )
 
-    await Promise.resolve()
-    expect(refreshAccount).toHaveBeenCalledWith("acc_await", true)
+    await refreshStarted
+    expect(mocks.refreshAccount).toHaveBeenCalledWith("acc_await", true)
     expect(sendResponse).not.toHaveBeenCalled()
 
     resolveRefresh?.({ refreshed: true })
@@ -286,28 +273,14 @@ describe("redemptionAssist post-redeem refresh", () => {
   })
 
   it("does not refresh when redemption fails", async () => {
-    vi.resetModules()
+    mocks.refreshAccount.mockResolvedValue({ refreshed: true })
+    mocks.redeemCodeForAccount.mockResolvedValue({
+      success: false,
+      message: "nope",
+    })
 
-    const refreshAccount = vi.fn().mockResolvedValue({ refreshed: true })
-    const redeemCodeForAccount = vi
-      .fn()
-      .mockResolvedValue({ success: false, message: "nope" })
-
-    vi.doMock("~/services/accounts/accountStorage", () => ({
-      accountStorage: {
-        refreshAccount,
-      },
-    }))
-
-    vi.doMock("~/services/redemption/redeemService", () => ({
-      redeemService: {
-        redeemCodeForAccount,
-      },
-    }))
-
-    const { handleRedemptionAssistMessage } = await import(
-      "~/services/redemption/redemptionAssist"
-    )
+    const { handleRedemptionAssistMessage } =
+      await import("~/services/redemption/redemptionAssist")
 
     const sendResponse = vi.fn()
 
@@ -321,7 +294,7 @@ describe("redemptionAssist post-redeem refresh", () => {
       sendResponse,
     )
 
-    expect(refreshAccount).not.toHaveBeenCalled()
+    expect(mocks.refreshAccount).not.toHaveBeenCalled()
     expect(sendResponse).toHaveBeenCalledWith({
       success: true,
       data: { success: false, message: "nope" },

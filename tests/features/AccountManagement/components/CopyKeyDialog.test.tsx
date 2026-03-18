@@ -71,6 +71,14 @@ const TOKEN = {
   group: "",
 } as any
 
+const waitForDialogReady = async () => {
+  await waitFor(() => {
+    expect(
+      screen.queryByText("ui:dialog.copyKey.loading"),
+    ).not.toBeInTheDocument()
+  })
+}
+
 describe("CopyKeyDialog", () => {
   beforeEach(() => {
     fetchAccountTokensMock.mockReset()
@@ -98,6 +106,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     const createButton = await screen.findByRole("button", {
       name: "ui:dialog.copyKey.createKey",
     })
@@ -125,6 +134,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     const createButton = await screen.findByRole("button", {
       name: "ui:dialog.copyKey.createKey",
     })
@@ -159,6 +169,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     const createButton = await screen.findByRole("button", {
       name: "ui:dialog.copyKey.createKey",
     })
@@ -195,6 +206,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     await user.click(await screen.findByText("default"))
     await user.click(
       await screen.findByRole("button", { name: "ui:dialog.copyKey.copy" }),
@@ -224,6 +236,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     await user.click(await screen.findByText("default"))
     await user.click(
       await screen.findByRole("button", { name: "ui:dialog.copyKey.copy" }),
@@ -255,6 +268,7 @@ describe("CopyKeyDialog", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     const customCreateButton = await screen.findByRole("button", {
       name: "ui:dialog.copyKey.createCustomKey",
     })

@@ -8,93 +8,149 @@ type RuntimeMessageListener = (
   sendResponse: (response: any) => void,
 ) => unknown
 
-describe("setupRuntimeMessageListeners routing", () => {
-  let runtimeMessageListener: RuntimeMessageListener | undefined
-  let applyActionClickBehavior: ReturnType<typeof vi.fn>
-  let handleManagedSiteModelSyncMessage: ReturnType<typeof vi.fn>
-  let setupContextMenus: ReturnType<typeof vi.fn>
+const mockState = vi.hoisted(() => ({
+  runtimeMessageListener: undefined as RuntimeMessageListener | undefined,
+}))
 
+const mocks = vi.hoisted(() => ({
+  applyActionClickBehavior: vi.fn(),
+  handleAccountKeyRepairMessage: vi.fn(),
+  handleAutoDetectSite: vi.fn(),
+  handleCloseTempWindow: vi.fn(),
+  handleDailyBalanceHistoryMessage: vi.fn(),
+  handleLdohSiteLookupMessage: vi.fn(),
+  handleManagedSiteModelSyncMessage: vi.fn(),
+  handleOpenTempWindow: vi.fn(),
+  handleTempWindowFetch: vi.fn(),
+  handleTempWindowGetRenderedTitle: vi.fn(),
+  handleTempWindowTurnstileFetch: vi.fn(),
+  handleWebAiApiCheckMessage: vi.fn(),
+  onRuntimeMessage: vi.fn((listener: RuntimeMessageListener) => {
+    mockState.runtimeMessageListener = listener
+  }),
+  setupContextMenus: vi.fn(),
+  trackCookieInterceptorUrl: vi.fn(),
+}))
+
+vi.mock("~/utils/browser/browserApi", async (importOriginal) => {
+  const actual =
+    await importOriginal<typeof import("~/utils/browser/browserApi")>()
+  return {
+    ...actual,
+    onRuntimeMessage: mocks.onRuntimeMessage,
+  }
+})
+
+vi.mock("~/entrypoints/background/actionClickBehavior", () => ({
+  applyActionClickBehavior: mocks.applyActionClickBehavior,
+}))
+
+vi.mock("~/entrypoints/background/contextMenus", () => ({
+  setupContextMenus: mocks.setupContextMenus,
+}))
+
+vi.mock("~/services/models/modelSync", () => ({
+  handleManagedSiteModelSyncMessage: mocks.handleManagedSiteModelSyncMessage,
+}))
+
+vi.mock("~/services/accounts/accountKeyAutoProvisioning", () => ({
+  handleAccountKeyRepairMessage: mocks.handleAccountKeyRepairMessage,
+}))
+
+vi.mock("~/services/history/dailyBalanceHistory/scheduler", () => ({
+  handleDailyBalanceHistoryMessage: mocks.handleDailyBalanceHistoryMessage,
+}))
+
+vi.mock("~/services/integrations/ldohSiteLookup/background", () => ({
+  handleLdohSiteLookupMessage: mocks.handleLdohSiteLookupMessage,
+}))
+
+vi.mock("~/services/verification/webAiApiCheck/background", () => ({
+  handleWebAiApiCheckMessage: mocks.handleWebAiApiCheckMessage,
+}))
+
+vi.mock("~/entrypoints/background/cookieInterceptor", () => ({
+  trackCookieInterceptorUrl: mocks.trackCookieInterceptorUrl,
+}))
+
+vi.mock("~/entrypoints/background/tempWindowPool", () => ({
+  handleAutoDetectSite: mocks.handleAutoDetectSite,
+  handleCloseTempWindow: mocks.handleCloseTempWindow,
+  handleOpenTempWindow: mocks.handleOpenTempWindow,
+  handleTempWindowFetch: mocks.handleTempWindowFetch,
+  handleTempWindowGetRenderedTitle: mocks.handleTempWindowGetRenderedTitle,
+  handleTempWindowTurnstileFetch: mocks.handleTempWindowTurnstileFetch,
+}))
+
+// runtimeMessages imports these modules; provide minimal stubs to avoid heavy side effects.
+vi.mock("~/services/checkin/autoCheckin/scheduler", () => ({
+  handleAutoCheckinMessage: vi.fn(),
+}))
+
+vi.mock("~/services/accounts/autoRefreshService", () => ({
+  handleAutoRefreshMessage: vi.fn(),
+}))
+
+vi.mock("~/services/managedSites/channelConfigStorage", () => ({
+  handleChannelConfigMessage: vi.fn(),
+}))
+
+vi.mock("~/services/checkin/externalCheckInService", () => ({
+  handleExternalCheckInMessage: vi.fn(),
+}))
+
+vi.mock("~/services/redemption/redemptionAssist", () => ({
+  handleRedemptionAssistMessage: vi.fn(),
+}))
+
+vi.mock("~/services/history/usageHistory/scheduler", () => ({
+  handleUsageHistoryMessage: vi.fn(),
+}))
+
+vi.mock("~/services/webdav/webdavAutoSyncService", () => ({
+  handleWebdavAutoSyncMessage: vi.fn(),
+}))
+
+describe("setupRuntimeMessageListeners routing", () => {
   beforeEach(() => {
-    runtimeMessageListener = undefined
-    applyActionClickBehavior = vi.fn()
-    handleManagedSiteModelSyncMessage = vi.fn()
-    setupContextMenus = vi.fn().mockResolvedValue(undefined)
+    mockState.runtimeMessageListener = undefined
+
+    mocks.applyActionClickBehavior.mockReset()
+    mocks.handleAccountKeyRepairMessage.mockReset()
+    mocks.handleAutoDetectSite.mockReset()
+    mocks.handleCloseTempWindow.mockReset()
+    mocks.handleDailyBalanceHistoryMessage.mockReset()
+    mocks.handleLdohSiteLookupMessage.mockReset()
+    mocks.handleManagedSiteModelSyncMessage.mockReset()
+    mocks.handleOpenTempWindow.mockReset()
+    mocks.handleTempWindowFetch.mockReset()
+    mocks.handleTempWindowGetRenderedTitle.mockReset()
+    mocks.handleTempWindowTurnstileFetch.mockReset()
+    mocks.handleWebAiApiCheckMessage.mockReset()
+    mocks.onRuntimeMessage.mockClear()
+    mocks.setupContextMenus.mockReset()
+    mocks.trackCookieInterceptorUrl.mockReset()
+
+    mocks.setupContextMenus.mockResolvedValue(undefined)
+    mocks.trackCookieInterceptorUrl.mockResolvedValue(undefined)
 
     vi.resetModules()
-
-    vi.doMock("~/utils/browser/browserApi", async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import("~/utils/browser/browserApi")>()
-      return {
-        ...actual,
-        onRuntimeMessage: vi.fn((listener: RuntimeMessageListener) => {
-          runtimeMessageListener = listener
-        }),
-      }
-    })
-
-    vi.doMock("~/entrypoints/background/actionClickBehavior", () => ({
-      applyActionClickBehavior,
-    }))
-
-    vi.doMock("~/entrypoints/background/contextMenus", () => ({
-      setupContextMenus,
-    }))
-
-    vi.doMock("~/services/models/modelSync", () => ({
-      handleManagedSiteModelSyncMessage,
-    }))
-
-    // runtimeMessages imports these modules; provide minimal stubs to avoid heavy side effects.
-    vi.doMock("~/services/checkin/autoCheckin/scheduler", () => ({
-      handleAutoCheckinMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/accounts/autoRefreshService", () => ({
-      handleAutoRefreshMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/managedSites/channelConfigStorage", () => ({
-      handleChannelConfigMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/checkin/externalCheckInService", () => ({
-      handleExternalCheckInMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/redemption/redemptionAssist", () => ({
-      handleRedemptionAssistMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/history/usageHistory/scheduler", () => ({
-      handleUsageHistoryMessage: vi.fn(),
-    }))
-    vi.doMock("~/services/webdav/webdavAutoSyncService", () => ({
-      handleWebdavAutoSyncMessage: vi.fn(),
-    }))
   })
 
   afterEach(() => {
-    vi.doUnmock("~/utils/browser/browserApi")
-    vi.doUnmock("~/entrypoints/background/actionClickBehavior")
-    vi.doUnmock("~/entrypoints/background/contextMenus")
-    vi.doUnmock("~/services/models/modelSync")
-    vi.doUnmock("~/services/checkin/autoCheckin/scheduler")
-    vi.doUnmock("~/services/accounts/autoRefreshService")
-    vi.doUnmock("~/services/managedSites/channelConfigStorage")
-    vi.doUnmock("~/services/checkin/externalCheckInService")
-    vi.doUnmock("~/services/redemption/redemptionAssist")
-    vi.doUnmock("~/services/history/usageHistory/scheduler")
-    vi.doUnmock("~/services/webdav/webdavAutoSyncService")
     vi.resetModules()
     vi.restoreAllMocks()
   })
 
   it("routes exact-match actions and responds synchronously", async () => {
-    const { setupRuntimeMessageListeners } = await import(
-      "~/entrypoints/background/runtimeMessages"
-    )
+    const { setupRuntimeMessageListeners } =
+      await import("~/entrypoints/background/runtimeMessages")
 
     setupRuntimeMessageListeners()
-    expect(runtimeMessageListener).toBeTypeOf("function")
+    expect(mockState.runtimeMessageListener).toBeTypeOf("function")
 
     const sendResponse = vi.fn()
-    const result = runtimeMessageListener?.(
+    const result = mockState.runtimeMessageListener?.(
       {
         action: RuntimeActionIds.PreferencesUpdateActionClickBehavior,
         behavior: "openPopup",
@@ -103,21 +159,20 @@ describe("setupRuntimeMessageListeners routing", () => {
       sendResponse,
     )
 
-    expect(applyActionClickBehavior).toHaveBeenCalledWith("openPopup")
+    expect(mocks.applyActionClickBehavior).toHaveBeenCalledWith("openPopup")
     expect(sendResponse).toHaveBeenCalledWith({ success: true })
     expect(result).toBe(true)
   })
 
   it("refreshes context menus when requested", async () => {
-    const { setupRuntimeMessageListeners } = await import(
-      "~/entrypoints/background/runtimeMessages"
-    )
+    const { setupRuntimeMessageListeners } =
+      await import("~/entrypoints/background/runtimeMessages")
 
     setupRuntimeMessageListeners()
-    expect(runtimeMessageListener).toBeTypeOf("function")
+    expect(mockState.runtimeMessageListener).toBeTypeOf("function")
 
     const sendResponse = vi.fn()
-    const result = runtimeMessageListener?.(
+    const result = mockState.runtimeMessageListener?.(
       {
         action: RuntimeActionIds.PreferencesRefreshContextMenus,
       },
@@ -126,26 +181,25 @@ describe("setupRuntimeMessageListeners routing", () => {
     )
 
     expect(result).toBe(true)
-    expect(setupContextMenus).toHaveBeenCalledTimes(1)
+    expect(mocks.setupContextMenus).toHaveBeenCalledTimes(1)
 
     await new Promise((resolve) => setTimeout(resolve, 0))
     expect(sendResponse).toHaveBeenCalledWith({ success: true })
   })
 
   it("routes prefix actions to the feature handler and keeps the response channel open", async () => {
-    const { setupRuntimeMessageListeners } = await import(
-      "~/entrypoints/background/runtimeMessages"
-    )
+    const { setupRuntimeMessageListeners } =
+      await import("~/entrypoints/background/runtimeMessages")
 
     setupRuntimeMessageListeners()
-    expect(runtimeMessageListener).toBeTypeOf("function")
+    expect(mockState.runtimeMessageListener).toBeTypeOf("function")
 
     const sendResponse = vi.fn()
     const request = { action: RuntimeActionIds.ModelSyncGetNextRun }
 
-    const result = runtimeMessageListener?.(request, {}, sendResponse)
+    const result = mockState.runtimeMessageListener?.(request, {}, sendResponse)
 
-    expect(handleManagedSiteModelSyncMessage).toHaveBeenCalledWith(
+    expect(mocks.handleManagedSiteModelSyncMessage).toHaveBeenCalledWith(
       request,
       sendResponse,
     )
@@ -153,30 +207,28 @@ describe("setupRuntimeMessageListeners routing", () => {
   })
 
   it("returns undefined when action is missing", async () => {
-    const { setupRuntimeMessageListeners } = await import(
-      "~/entrypoints/background/runtimeMessages"
-    )
+    const { setupRuntimeMessageListeners } =
+      await import("~/entrypoints/background/runtimeMessages")
 
     setupRuntimeMessageListeners()
-    expect(runtimeMessageListener).toBeTypeOf("function")
+    expect(mockState.runtimeMessageListener).toBeTypeOf("function")
 
     const sendResponse = vi.fn()
-    const result = runtimeMessageListener?.({}, {}, sendResponse)
+    const result = mockState.runtimeMessageListener?.({}, {}, sendResponse)
 
     expect(sendResponse).not.toHaveBeenCalled()
     expect(result).toBeUndefined()
   })
 
   it("returns undefined when action is unknown", async () => {
-    const { setupRuntimeMessageListeners } = await import(
-      "~/entrypoints/background/runtimeMessages"
-    )
+    const { setupRuntimeMessageListeners } =
+      await import("~/entrypoints/background/runtimeMessages")
 
     setupRuntimeMessageListeners()
-    expect(runtimeMessageListener).toBeTypeOf("function")
+    expect(mockState.runtimeMessageListener).toBeTypeOf("function")
 
     const sendResponse = vi.fn()
-    const result = runtimeMessageListener?.(
+    const result = mockState.runtimeMessageListener?.(
       { action: "unknownAction" },
       {},
       sendResponse,

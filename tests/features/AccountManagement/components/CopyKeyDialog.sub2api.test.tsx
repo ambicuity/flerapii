@@ -41,6 +41,14 @@ const ACCOUNT = buildSub2ApiAccount()
 
 const TOKEN = buildSub2ApiToken()
 
+const waitForDialogReady = async () => {
+  await waitFor(() => {
+    expect(
+      screen.queryByText("ui:dialog.copyKey.loading"),
+    ).not.toBeInTheDocument()
+  })
+}
+
 describe("CopyKeyDialog sub2api support", () => {
   beforeEach(() => {
     fetchAccountTokensMock.mockReset()
@@ -59,6 +67,7 @@ describe("CopyKeyDialog sub2api support", () => {
 
     render(<CopyKeyDialog isOpen={true} onClose={() => {}} account={ACCOUNT} />)
 
+    await waitForDialogReady()
     await user.click(
       await screen.findByRole("button", {
         name: "ui:dialog.copyKey.createKey",

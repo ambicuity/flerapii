@@ -41,6 +41,14 @@ const ACCOUNT = buildSub2ApiAccount()
 
 const TOKEN = buildSub2ApiToken()
 
+const waitForDialogReady = async () => {
+  await waitFor(() => {
+    expect(
+      screen.queryByText("modelList:keyDialog.loading"),
+    ).not.toBeInTheDocument()
+  })
+}
+
 describe("ModelKeyDialog sub2api support", () => {
   beforeEach(() => {
     fetchAccountTokensMock.mockReset()
@@ -67,6 +75,7 @@ describe("ModelKeyDialog sub2api support", () => {
       />,
     )
 
+    await waitForDialogReady()
     await user.click(
       await screen.findByRole("button", {
         name: "modelList:keyDialog.createKey",

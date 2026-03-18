@@ -30,7 +30,7 @@ jobs:
     steps:
       # 先 checkout 完整仓库，后面要用 git 命令找 tag
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -72,7 +72,7 @@ jobs:
       # 3️⃣ Checkout 到指定的 ref（tag 或 commit hash）
       - name: Checkout specific ref
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ steps.get_ref.outputs.ref }}
           fetch-depth: 0 # 确保获取完整历史，以便 tag、commit 都能找到
@@ -85,7 +85,7 @@ jobs:
           run_install: false
 
       # 设置 Node.js 环境 + pnpm 缓存
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         if: ${{ steps.get_ref.outputs.ref != '' }}
         with:
           node-version: 20

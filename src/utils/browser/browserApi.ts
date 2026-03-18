@@ -787,6 +787,25 @@ export function getActionApi(): ActionAPI {
 }
 
 /**
+ *
+ */
+function hasActionClickListener(
+  action: ActionAPI,
+  listener: ActionClickListener,
+): boolean | null {
+  const hasListener = action.onClicked?.hasListener
+  if (typeof hasListener !== "function") {
+    return null
+  }
+
+  try {
+    return hasListener(listener)
+  } catch {
+    return null
+  }
+}
+
+/**
  *  popup MV2  MV3
  * @param popup  popup
  */
@@ -803,11 +822,13 @@ export function addActionClickListener(
   listener: ActionClickListener,
 ): () => void {
   const action = getActionApi()
-  if (!action.onClicked.hasListener(listener)) {
+  const listenerRegistered = hasActionClickListener(action, listener)
+  if (listenerRegistered !== true) {
     action.onClicked.addListener(listener)
   }
   return () => {
-    if (action.onClicked.hasListener(listener)) {
+    const stillRegistered = hasActionClickListener(action, listener)
+    if (stillRegistered !== false) {
       action.onClicked.removeListener(listener)
     }
   }
@@ -820,7 +841,8 @@ export function removeActionClickListener(
   listener: (tab: browser.tabs.Tab, info?: any) => void,
 ): void {
   const action = getActionApi()
-  if (action.onClicked.hasListener(listener)) {
+  const listenerRegistered = hasActionClickListener(action, listener)
+  if (listenerRegistered !== false) {
     action.onClicked.removeListener(listener)
   }
 }

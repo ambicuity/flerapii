@@ -92,27 +92,61 @@ if (!globalAny.browser.runtime) {
   globalAny.browser.runtime = {}
 }
 
-// fakeBrowser ships with a getManifest stub that throws "not implemented".
-// Override it unconditionally so modules can safely read optional permissions.
-globalAny.browser.runtime.getManifest = vi.fn(() => ({
-  manifest_version: 3,
-  optional_permissions: ["cookies", "declarativeNetRequestWithHostAccess"],
-}))
+const installSharedBrowserStubs = () => {
+  if (!globalAny.browser) {
+    globalAny.browser = fakeBrowser
+  }
+  if (!globalAny.chrome) {
+    globalAny.chrome = globalAny.browser ?? fakeBrowser
+  }
+  if (!globalAny.browser.runtime) {
+    globalAny.browser.runtime = {}
+  }
 
-// @webext-core/fake-browser does not implement permissions.onAdded/onRemoved event
-// listeners. cookieInterceptor.ts calls chrome.permissions.onAdded.addListener at
-// runtime; replacing the throwing stubs with no-ops prevents test failures in any
-// test that imports the background entrypoint.
-if (globalAny.chrome?.permissions?.onAdded) {
-  globalAny.chrome.permissions.onAdded.addListener = vi.fn()
-  globalAny.chrome.permissions.onAdded.removeListener = vi.fn()
-  globalAny.chrome.permissions.onAdded.hasListener = vi.fn(() => false)
+  // fakeBrowser ships with a getManifest stub that throws "not implemented".
+  // Override it unconditionally so modules can safely read optional permissions.
+  globalAny.browser.runtime.getManifest = vi.fn(() => ({
+    manifest_version: 3,
+    optional_permissions: ["cookies", "declarativeNetRequestWithHostAccess"],
+  }))
+
+  const actionClickListeners = new Set<(...args: any[]) => void>()
+  const actionApi = {
+    setPopup: vi.fn(),
+    onClicked: {
+      addListener: vi.fn((listener: (...args: any[]) => void) => {
+        actionClickListeners.add(listener)
+      }),
+      removeListener: vi.fn((listener: (...args: any[]) => void) => {
+        actionClickListeners.delete(listener)
+      }),
+      hasListener: vi.fn((listener: (...args: any[]) => void) =>
+        actionClickListeners.has(listener),
+      ),
+    },
+  }
+
+  globalAny.browser.action = actionApi
+  globalAny.browser.browserAction = actionApi
+  globalAny.chrome.action = actionApi
+  globalAny.chrome.browserAction = actionApi
+
+  // @webext-core/fake-browser does not implement permissions.onAdded/onRemoved
+  // event listeners. cookieInterceptor.ts calls these at runtime, so replace
+  // the throwing stubs with no-ops for every test run.
+  if (globalAny.chrome?.permissions?.onAdded) {
+    globalAny.chrome.permissions.onAdded.addListener = vi.fn()
+    globalAny.chrome.permissions.onAdded.removeListener = vi.fn()
+    globalAny.chrome.permissions.onAdded.hasListener = vi.fn(() => false)
+  }
+  if (globalAny.chrome?.permissions?.onRemoved) {
+    globalAny.chrome.permissions.onRemoved.addListener = vi.fn()
+    globalAny.chrome.permissions.onRemoved.removeListener = vi.fn()
+    globalAny.chrome.permissions.onRemoved.hasListener = vi.fn(() => false)
+  }
 }
-if (globalAny.chrome?.permissions?.onRemoved) {
-  globalAny.chrome.permissions.onRemoved.addListener = vi.fn()
-  globalAny.chrome.permissions.onRemoved.removeListener = vi.fn()
-  globalAny.chrome.permissions.onRemoved.hasListener = vi.fn(() => false)
-}
+
+installSharedBrowserStubs()
 
 globalAny.IntersectionObserver = class IntersectionObserver {
   disconnect() {}
@@ -163,9 +197,11 @@ beforeAll(() => {
 beforeEach(async () => {
   fakeBrowser.reset()
   await fakeBrowser.windows.create({ focused: true })
+  installSharedBrowserStubs()
 })
 
 afterEach(() => {
+  vi.useRealTimers()
   server.resetHandlers()
   cleanup()
   vi.clearAllMocks()

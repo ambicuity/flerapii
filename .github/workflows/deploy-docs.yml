@@ -8,7 +8,7 @@ on:
     paths:
       - "docs/docs/**" # matches all doc content and config under /docs/docs/ (including .vuepress/, config.js, etc.)
       - "docs/package.json" # matches /docs/package.json (where dependencies are defined)
-      - "docs/pnpm-lock.json" # matches /docs/pnpm-lock.json (where dependency versions are locked)
+      - "docs/pnpm-lock.yaml" # matches /docs/pnpm-lock.yaml (where dependency versions are locked)
 
 permissions:
   contents: write
@@ -22,7 +22,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           # If your docs require Git submodules, uncomment the next line
@@ -34,10 +34,11 @@ jobs:
           version: 10
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
-          node-version: 22
+          node-version: 20
           cache: pnpm
+          cache-dependency-path: docs/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
