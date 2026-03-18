@@ -38,7 +38,7 @@ jobs:
       - name: Get PR details (manual trigger)
         if: github.event_name == 'workflow_dispatch'
         id: pr_details
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const { data: pr } = await github.rest.pulls.get({
@@ -136,7 +136,7 @@ jobs:
         # Use workflow_dispatch for maintainers; for pull_request, comments are published by workflow_run
         # to support fork PRs safely (avoids running untrusted code with a write token).
         if: github.event_name == 'workflow_dispatch'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         env:
           ARTIFACT_LIST: ${{ steps.collect_artifacts.outputs.files }}
           PR_NUMBER: ${{ github.event_name == 'workflow_dispatch' && inputs.pr_number || github.event.pull_request.number }}
