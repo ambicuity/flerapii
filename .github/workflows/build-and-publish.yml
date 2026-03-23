@@ -30,7 +30,7 @@ jobs:
     steps:
       # 先 checkout 完整仓库，后面要用 git 命令找 tag
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
         with:
           fetch-depth: 0
 
@@ -72,7 +72,7 @@ jobs:
       # 3️⃣ Checkout 到指定的 ref（tag 或 commit hash）
       - name: Checkout specific ref
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.0.2
         with:
           ref: ${{ steps.get_ref.outputs.ref }}
           fetch-depth: 0 # 确保获取完整历史，以便 tag、commit 都能找到
