@@ -184,8 +184,8 @@ importers:
         specifier: 0.1.38
         version: 0.1.38
       '@types/firefox-webext-browser':
-        specifier: ^120.0.4
-        version: 120.0.4
+        specifier: ^143.0.0
+        version: 143.0.0
       '@types/lodash-es':
         specifier: ^4.17.12
         version: 4.17.12
@@ -2334,8 +2334,8 @@ packages:
       react: '>=16.9.0'
       react-dom: '>=16.9.0'
 
-  '@rc-component/mini-decimal@1.1.2':
-    resolution: {integrity: sha512-ZrT0tYKwTVOsvRjC5jwaqL36h4sEe57gh1r4cnmIteEpr4YtvhnQGeTL7yjtA1Z/+5LNY3t4gyohaYKq1Q/Clg==}
+  '@rc-component/mini-decimal@1.1.3':
+    resolution: {integrity: sha512-bk/FJ09fLf+NLODMAFll6CfYrHPBioTedhW6lxDBuuWucJEqFUd4l/D/5JgIi3dina6sYahB8iuPAZTNz2pMxw==}
     engines: {node: '>=8.x'}
 
   '@rc-component/mutate-observer@1.1.0':
@@ -2981,8 +2981,8 @@ packages:
   '@types/filewriter@0.0.33':
     resolution: {integrity: sha512-xFU8ZXTw4gd358lb2jw25nxY9QAgqn2+bKKjKOYfNCzN4DKCFetK7sPtrlpg66Ywe3vWY9FNxprZawAh9wfJ3g==}
 
-  '@types/firefox-webext-browser@120.0.4':
-    resolution: {integrity: sha512-lBrpf08xhiZBigrtdQfUaqX1UauwZ+skbFiL8u2Tdra/rklkKadYmIzTwkNZSWtuZ7OKpFqbE2HHfDoFqvZf6w==}
+  '@types/firefox-webext-browser@143.0.0':
+    resolution: {integrity: sha512-865dYKMOP0CllFyHmgXV4IQgVL51OSQQCwSoihQ17EwugePKFSAZRc0EI+y7Ly4q7j5KyURlA7LgRpFieO4JOw==}
 
   '@types/geojson@7946.0.16':
     resolution: {integrity: sha512-6C8nqWur3j98U6+lXDfTUWIfgvZU+EumvpHKcYjujKH7woYyLj2sUmff0tRhrqM7BohUw7Pz3ZB1jj2gW9Fvmg==}
@@ -6893,6 +6893,10 @@ packages:
 
   postcss@8.5.8:
     resolution: {integrity: sha512-OW/rX8O/jXnm82Ey1k44pObPtdblfiuWnrd8X7GJ7emImCOstunGbXUpp7HdBrFQX6rJzn3sPT397Wp5aCwCHg==}
+    engines: {node: ^10 || ^12 || >=14}
+
+  postcss@8.5.9:
+    resolution: {integrity: sha512-7a70Nsot+EMX9fFU3064K/kdHWZqGVY+BADLyXc8Dfv+mTLLVl6JzJpPaCZ2kQL9gIJvKXSLMHhqdRRjwQeFtw==}
     engines: {node: ^10 || ^12 || >=14}
 
   powershell-utils@0.1.0:
@@ -11297,7 +11301,7 @@ snapshots:
       react: 19.2.4
       react-dom: 19.2.4(react@19.2.4)
 
-  '@rc-component/mini-decimal@1.1.2':
+  '@rc-component/mini-decimal@1.1.3':
     dependencies:
       '@babel/runtime': 7.29.2
 
@@ -11899,7 +11903,7 @@ snapshots:
 
   '@types/filewriter@0.0.33': {}
 
-  '@types/firefox-webext-browser@120.0.4': {}
+  '@types/firefox-webext-browser@143.0.0': {}
 
   '@types/geojson@7946.0.16': {}
 
@@ -12221,7 +12225,7 @@ snapshots:
       '@vue/shared': 3.3.4
       estree-walker: 2.0.2
       magic-string: 0.30.21
-      postcss: 8.5.8
+      postcss: 8.5.9
       source-map-js: 1.2.1
     optional: true
 
@@ -16502,6 +16506,13 @@ snapshots:
       picocolors: 1.1.1
       source-map-js: 1.2.1
 
+  postcss@8.5.9:
+    dependencies:
+      nanoid: 3.3.11
+      picocolors: 1.1.1
+      source-map-js: 1.2.1
+    optional: true
+
   powershell-utils@0.1.0: {}
 
   prelude-ls@1.2.1: {}
@@ -16767,7 +16778,7 @@ snapshots:
   rc-input-number@9.5.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4):
     dependencies:
       '@babel/runtime': 7.29.2
-      '@rc-component/mini-decimal': 1.1.2
+      '@rc-component/mini-decimal': 1.1.3
       classnames: 2.5.1
       rc-input: 1.8.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       rc-util: 5.44.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
