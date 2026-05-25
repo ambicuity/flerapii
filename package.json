@@ -146,6 +146,11 @@
   "pnpm": {
     "onlyBuiltDependencies": [
       "electron"
-    ]
+    ],
+    "overrides": {
+      "lodash-es": ">=4.18.1",
+      "uuid": ">=13.0.2",
+      "js-cookie": ">=3.0.7"
+    }
   }
 }
