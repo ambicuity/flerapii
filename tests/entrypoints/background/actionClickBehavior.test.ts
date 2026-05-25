@@ -2,52 +2,39 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { POPUP_PAGE_PATH } from "~/constants/extensionPages"
 
-describe("background applyActionClickBehavior", () => {
-  let addActionClickListener: ReturnType<typeof vi.fn>
-  let removeActionClickListener: ReturnType<typeof vi.fn>
-  let setActionPopup: ReturnType<typeof vi.fn>
-  let getSidePanelSupport: ReturnType<typeof vi.fn>
-  let openSidePanelWithFallback: ReturnType<typeof vi.fn>
-  let setPanelBehavior: ReturnType<typeof vi.fn>
+const addActionClickListener = vi.fn()
+const removeActionClickListener = vi.fn()
+const setActionPopup = vi.fn().mockResolvedValue(undefined)
+const getSidePanelSupport = vi.fn()
+const openSidePanelWithFallback = vi.fn().mockResolvedValue(undefined)
+const setPanelBehavior = vi.fn().mockResolvedValue(undefined)
 
+vi.mock("~/utils/browser/browserApi", () => ({
+  addActionClickListener,
+  getSidePanelSupport,
+  removeActionClickListener,
+  setActionPopup,
+}))
+
+vi.mock("~/utils/navigation", () => ({
+  openSidePanelWithFallback,
+}))
+
+describe("background applyActionClickBehavior", () => {
   beforeEach(() => {
-    addActionClickListener = vi.fn()
-    removeActionClickListener = vi.fn()
-    setActionPopup = vi.fn().mockResolvedValue(undefined)
-    getSidePanelSupport = vi.fn()
-    openSidePanelWithFallback = vi.fn().mockResolvedValue(undefined)
-    setPanelBehavior = vi.fn().mockResolvedValue(undefined)
+    vi.clearAllMocks()
+    setActionPopup.mockResolvedValue(undefined)
+    openSidePanelWithFallback.mockResolvedValue(undefined)
+    setPanelBehavior.mockResolvedValue(undefined)
     ;(globalThis as any).chrome = {
       sidePanel: {
         setPanelBehavior,
       },
     }
-
-    vi.resetModules()
-
-    vi.doMock("~/utils/browser/browserApi", async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import("~/utils/browser/browserApi")>()
-      return {
-        ...actual,
-        addActionClickListener,
-        getSidePanelSupport,
-        removeActionClickListener,
-        setActionPopup,
-      }
-    })
-
-    vi.doMock("~/utils/navigation", () => ({
-      openSidePanelWithFallback,
-    }))
   })
 
   afterEach(() => {
     ;(globalThis as any).chrome = undefined
-    vi.doUnmock("~/utils/browser/browserApi")
-    vi.doUnmock("~/utils/navigation")
-    vi.resetModules()
-    vi.restoreAllMocks()
   })
 
   it("falls back to popup wiring when sidepanel is requested but unsupported", async () => {
