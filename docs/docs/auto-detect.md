@@ -47,3 +47,15 @@ If auto-identification consistently fails, you can switch to **Manual Addition**
 If auto-identification consistently fails, you can switch to **Manual Addition**, complete the information, and then save the account.
 
 See [Manual Account Addition Guide](./get-started.md#manual-addition) for details.
+
+## Privacy and Security Notes
+
+- Auto-detection is feature-driven and only runs when you trigger account detection.
+- Local browser session state (for example cookies/local storage on the target site) may be used to complete authenticated detection flows.
+- Optional permissions should remain disabled unless needed for protection-bypass and cookie-assisted workflows.
+
+## Related Documentation
+
+- [Getting Started](./get-started.md)
+- [Cloudflare Shield Bypass Assistant](./cloudflare-helper.md)
+- [Permission Management](./permissions.md)

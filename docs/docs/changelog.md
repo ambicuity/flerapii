@@ -12,3 +12,20 @@ This page records the main updates for general users (feature changes / experien
 - **Initial Release:**
   - Launch of Flerapii - AI Aggregation Relay Manager.
   - Core features: Account management, automatic balance retrieval, model list synchronization, API key management, and cross-platform WebDAV sync.
+
+## Troubleshooting and Recovery
+
+- If behavior changed after update, verify migration-sensitive settings first (`WebDAV`, auto-refresh, auto-checkin, permissions).
+- If needed, restore a known-good JSON backup from Import/Export.
+- For reproducible regressions, report version + steps in [GitHub Issues](https://github.com/ambicuity/flerapii/issues).
+
+## Privacy and Security Notes
+
+- Release notes do not alter privacy behavior by themselves; always verify active behavior against the current [Privacy Policy](./privacy.md).
+- Store listing/privacy metadata should be revalidated before public release.
+
+## Related Documentation
+
+- [Privacy Policy](./privacy.md)
+- [Chrome Web Store Submission Guide](./chrome-web-store-submission.md)
+- [Data Import and Export](./data-management.md)

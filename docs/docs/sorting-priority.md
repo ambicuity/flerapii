@@ -105,3 +105,9 @@ The table below corresponds to `SortingCriteriaType` in the code, and will be di
 
 - [Automatic Check-in and Check-in Monitoring](./auto-checkin.md)
 - [Automatic Refresh and Real-time Data](./auto-refresh.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

@@ -31,9 +31,16 @@
 | API export still reports 403 | Manually click "Export Again"; the backend will reuse the cookie that just passed the shield bypass; if it fails, check if the target site restricts administrator Tokens. |
 | No pop-up but identification fails | The site may have removed Cloudflare, but the API returns 401 (credentials invalid); please log in to the site again and refresh the plugin data. |
 
-## Related Documents
+## Related Documentation
 
 - [Cloudflare Protection and Temporary Window Degradation (Quick Start)](./get-started.md#cloudflare-window-downgrade)
 - [Quick Site Export](./quick-export.md)
 - [New API Channel Management](./new-api-channel-management.md)
 - [Permission Management (Optional Permissions)](./permissions.md)
+- [Privacy Policy](./privacy.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

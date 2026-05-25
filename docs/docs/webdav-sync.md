@@ -62,8 +62,15 @@ Enable "Automatic Synchronization" on the same page for scheduled background syn
 | Duplicate accounts after merging | Manually delete duplicates and re-upload; for strict control, use the "Upload Only" strategy. |
 | JSON file too large | It is recommended to regularly clean up expired accounts or export in batches to avoid exceeding WebDAV limits. |
 
-## Related Documents
+## Related Documentation
 
 - [Auto-Refresh and Real-time Data](./auto-refresh.md)
 - [Auto-Check-in](./auto-checkin.md)
 - [Cloudflare Bypass Helper](./cloudflare-helper.md)
+- [Privacy Policy](./privacy.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

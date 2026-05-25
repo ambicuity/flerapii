@@ -108,3 +108,9 @@
 - [New API Model List Synchronization](./new-api-model-sync.md)
 - [New API Channel Management](./new-api-channel-management.md)
 - [Quick Export Site Configuration](./quick-export.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

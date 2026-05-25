@@ -6,15 +6,15 @@ heroText: Flerapii - AI Aggregation Relay Manager
 tagline: "Open-source browser extension to uniformly manage third-party AI aggregation relays and self-built New APIs: automatically identify accounts, view balances, sync models, manage keys, and support cross-platform and cloud backups."
 actions:
   - text: Get Started
-    link: /en/get-started.html # Suggest modifying to your actual documentation path, e.g., /guide/
+    link: /get-started.html
     type: primary
     
   - text: Chrome Store
-    link: https://chromewebstore.google.com/detail/<chrome-extension-id>
+    link: https://chromewebstore.google.com/detail/cocbaodnhomfmikmkgplahalapdbgkjm
     type: secondary
 
   - text: Edge Store
-    link: https://microsoftedge.microsoft.com/addons/detail/<edge-extension-id>
+    link: https://microsoftedge.microsoft.com/addons/search/flerapii
     type: secondary
 
   - text: FireFox Store
@@ -41,7 +41,7 @@ features:
   - title: Full Platform Support
     details: Compatible with browsers such as Chrome, Edge, Firefox, and also supports mobile browsers like mobile Edge, Firefox for Android, Kiwi, etc., with dark mode adaptation.
   - title: Privacy and Security
-    details: Runs completely offline, all data is stored locally, and all core functions can be used without an internet connection.
+    details: Local-first by default: extension data stays in browser storage. Network requests only occur for features you use (for example relay endpoints, optional WebDAV backup/sync, and optional verification flows).
   - title: Cloudflare Anti-Bot Assistant
     details: Automatically pops up to bypass the 5-second shield when encountered, ensuring sites can be identified and recorded.
 
@@ -66,3 +66,27 @@ Flerapii, as a browser extension, can automatically identify accounts on these s
 - Super-API (Closed Source)
 - RIX_API (Closed Source, basic functionality supported)
 - VoAPI (Closed Source, older versions supported)
+
+## Compliance and Privacy
+
+- [Privacy Policy](./privacy.md)
+- [Permission Management](./permissions.md)
+- [Chrome Web Store Submission Guide](./chrome-web-store-submission.md)
+
+## Release Notes for Store Links
+
+- Chrome listing ID is active and documented: `cocbaodnhomfmikmkgplahalapdbgkjm`.
+- Edge Add-ons listing ID is pending publication confirmation. Until confirmed, documentation links to Edge search rather than a specific listing page.
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension data remains in browser extension storage unless you enable external integrations.
+- External traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or selected integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.
+
+## Related Documentation
+
+- [Getting Started](./get-started.md)
+- [Privacy Policy](./privacy.md)
+- [Permission Management](./permissions.md)
+- [Chrome Web Store Submission Guide](./chrome-web-store-submission.md)

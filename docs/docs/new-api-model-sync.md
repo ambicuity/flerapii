@@ -119,3 +119,22 @@ Take action based on the error message:
 - It is recommended to test the sync feature in a staging environment first.
 - Frequent synchronization can impact server performance; set a reasonable execution interval.
 :::
+
+## Operational Risks and Recovery
+
+- Risk: Overly aggressive concurrency/rate settings can trigger upstream throttling or unstable sync runs.
+- Recovery: Reduce concurrency and requests-per-minute, then use **Retry Failed Only**.
+- Risk: Incomplete admin configuration causes repeated authorization failures.
+- Recovery: Revalidate Base URL, admin token, and user ID in Basic Settings, then rerun a small scoped sync first.
+
+## Privacy and Security Notes
+
+- This feature performs management API calls only to your configured New API backend.
+- No first-party telemetry backend is used by Flerapii for this workflow.
+- Synchronization activity is operational metadata for your own extension usage context.
+
+## Related Documentation
+
+- [New API Channel Management](./new-api-channel-management.md)
+- [Model Redirect](./model-redirect.md)
+- [Privacy Policy](./privacy.md)
