@@ -41,7 +41,7 @@ features:
   - title: Full Platform Support
     details: Compatible with browsers such as Chrome, Edge, Firefox, and also supports mobile browsers like mobile Edge, Firefox for Android, Kiwi, etc., with dark mode adaptation.
   - title: Privacy and Security
-    details: Local-first by default: extension data stays in browser storage. Network requests only occur for features you use (for example relay endpoints, optional WebDAV backup/sync, and optional verification flows).
+    details: "Local-first by default: extension data stays in browser storage. Network requests only occur for features you use (for example relay endpoints, optional WebDAV backup/sync, and optional verification flows)."
   - title: Cloudflare Anti-Bot Assistant
     details: Automatically pops up to bypass the 5-second shield when encountered, ensuring sites can be identified and recorded.
 
