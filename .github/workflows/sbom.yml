@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-  release:
-    types: [published]
   schedule:
     - cron: '0 0 * * *' # Daily at midnight UTC
 
@@ -15,8 +13,6 @@ permissions:
 jobs:
   generate-sbom:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
