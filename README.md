@@ -19,7 +19,7 @@
 
 ---
 
-**[Documentation](https://ambicuity.github.io/flerapii/) | [Supported Tools](https://ambicuity.github.io/flerapii/supported-export-tools.html) | [Supported Sites](https://ambicuity.github.io/flerapii/supported-sites.html) | [Quick Start](https://ambicuity.github.io/flerapii/get-started.html) | [FAQ](https://ambicuity.github.io/flerapii/faq.html) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)**
+**[Documentation](https://ambicuity.github.io/flerapii/) | [Privacy Policy](https://flerapii.riteshrana.engineer/privacy.html) | [Supported Tools](https://ambicuity.github.io/flerapii/supported-export-tools.html) | [Supported Sites](https://ambicuity.github.io/flerapii/supported-sites.html) | [Quick Start](https://ambicuity.github.io/flerapii/get-started.html) | [FAQ](https://ambicuity.github.io/flerapii/faq.html) | [Changelog](CHANGELOG.md) | [Contributing](CONTRIBUTING.md)**
 
 ---
 
@@ -111,6 +111,12 @@ For the full compatibility list and export tool list, see:
 ## Quick Start
 
 See the [Quick Start Guide](https://ambicuity.github.io/flerapii/get-started.html).
+
+## Compliance Documentation
+
+- [Privacy Policy](https://flerapii.riteshrana.engineer/privacy.html)
+- [Permissions Guide](https://ambicuity.github.io/flerapii/permissions.html)
+- [Chrome Web Store Submission Guide](https://ambicuity.github.io/flerapii/chrome-web-store-submission.html)
 
 ## Development
 

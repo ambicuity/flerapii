@@ -16,7 +16,8 @@
   "devMaintenance": "Development & Maintenance",
   "thanksDesc": "Thanks to all developers who have contributed to the open source community, the development of this plugin benefits from these excellent open source projects and tools",
   "privacyNotice": "Privacy Notice",
-  "privacyText": "All data of this plugin is stored locally in the browser and will not be actively uploaded to any server. Your account information and usage data are completely under your control, ensuring privacy and security",
+  "privacyText": "Flerapii is local-first: extension data stays in your browser by default. Data is only transmitted to external services when you explicitly configure and use optional features (for example, your own relay endpoints or WebDAV backup).",
+  "privacyPolicyLinkText": "View full privacy policy",
   "privacyTitle": "Privacy Protection",
   "stores": {
     "chrome": "Chrome Web Store",

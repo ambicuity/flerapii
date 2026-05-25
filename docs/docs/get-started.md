@@ -1,6 +1,6 @@
 # Getting Started
 
-An open-source browser extension designed to optimize the experience of managing AI proxy station accounts like New API. Users can easily manage and view account balances, models, and keys in a centralized location, with automatic site addition. Supports mobile devices via Kiwi or mobile Firefox browsers.
+Flerapii is a local-first browser extension for managing AI relay endpoints and self-hosted panels from one interface. This guide covers installation, first-run setup, and the recommended feature activation sequence for stable daily use.
 
 ## 1. Download
 
@@ -8,13 +8,17 @@ An open-source browser extension designed to optimize the experience of managing
 
 | Channel | Download Link | Current Version | Users |
 |---|---|---|---|
-| Chrome Store | [Chrome Store](https://chromewebstore.google.com/detail/<chrome-extension-id>) | [![Chrome version](https://img.shields.io/chrome-web-store/v/<chrome-extension-id>?label=Chrome&logo=googlechrome&style=flat)](https://chromewebstore.google.com/detail/<chrome-extension-id>) | [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/<chrome-extension-id>?label=Chrome%20Users)](https://chromewebstore.google.com/detail/<chrome-extension-id>) |
-| Edge Store | [Edge Store](https://microsoftedge.microsoft.com/addons/detail/<edge-extension-id>) | [![Edge version](https://img.shields.io/badge/dynamic/json?label=Edge&prefix=v&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2F<edge-extension-id>&logo=microsoftedge&style=flat)](https://microsoftedge.microsoft.com/addons/detail/<edge-extension-id>) | [![Edge Add-ons Users](https://img.shields.io/badge/dynamic/json?label=Edge%20Users&query=$.activeInstallCount&url=https://microsoftedge.microsoft.com/addons/getproductdetailsbycrxid/<edge-extension-id>)](https://microsoftedge.microsoft.com/addons/detail/<edge-extension-id>) |
+| Chrome Store | [Chrome Store](https://chromewebstore.google.com/detail/cocbaodnhomfmikmkgplahalapdbgkjm) | [![Chrome version](https://img.shields.io/chrome-web-store/v/cocbaodnhomfmikmkgplahalapdbgkjm?label=Chrome&logo=googlechrome&style=flat)](https://chromewebstore.google.com/detail/cocbaodnhomfmikmkgplahalapdbgkjm) | [![Chrome Web Store Users](https://img.shields.io/chrome-web-store/users/cocbaodnhomfmikmkgplahalapdbgkjm?label=Chrome%20Users)](https://chromewebstore.google.com/detail/cocbaodnhomfmikmkgplahalapdbgkjm) |
+| Edge Store | [Edge Add-ons search (listing ID pending)](https://microsoftedge.microsoft.com/addons/search/flerapii) | Pending Edge listing ID | Pending Edge listing ID |
 | Firefox Store | [Firefox Store](https://addons.mozilla.org/firefox/addon/contact@riteshrana.engineer) | [![Firefox version](https://img.shields.io/amo/v/%7Bcontact@riteshrana.engineer%7D?label=Firefox&logo=firefoxbrowser&style=flat)](https://addons.mozilla.org/firefox/addon/contact@riteshrana.engineer) | [![Mozilla Add-on Users](https://img.shields.io/amo/users/%7Bcontact@riteshrana.engineer%7D?label=Firefox%20Users)](https://addons.mozilla.org/firefox/addon/contact@riteshrana.engineer) |
 | GitHub Release | [Release Download](https://github.com/ambicuity/flerapii/releases) | [![GitHub version](https://img.shields.io/github/v/release/ambicuity/flerapii?label=GitHub&logo=github&style=flat)](https://github.com/ambicuity/flerapii/releases) | [![GitHub Downloads (all assets, all releases)](https://img.shields.io/github/downloads/ambicuity/flerapii/total?label=Total%20Downloads)](https://github.com/ambicuity/flerapii/releases) |
 
 ::: warning Tip
 Store versions may have a 1-3 day delay due to review processes. For the earliest access to new features or fixes, it is recommended to prioritize using the GitHub Release version or building from the repository source.
+:::
+
+::: info Edge Listing Status
+Edge Add-ons links currently point to search because the final Edge listing ID is pending documentation confirmation.
 :::
 
 ## 2. Supported Sites
@@ -78,6 +82,7 @@ If automatic recognition fails, you can manually enter site account details. You
 If the target site is a modified version (e.g., AnyRouter), please switch to **Cookie Mode** when adding the account, and then proceed with automatic recognition or manual input. When encountering sites with strict protection, you can also use the Cloudflare Bypass Assistant. For details, see [FAQ](./faq.md#anyrouter-error).
 
 <a id="quick-export-sites"></a>
+
 ## 4. Quick Export and Integration
 
 This extension supports exporting added site API configurations to local clients, CLI tools, and self-hosted sites, reducing the effort of repeatedly entering `Base URL`, keys, and model configurations. For a current, complete list, please refer to [Supported Export Tools and Integration Targets](./supported-export-tools.md).
@@ -173,3 +178,21 @@ Create/edit/delete channels directly within the extension. Combined with model w
 ::: tip Next Steps
 After completing the basic setup, you can proceed to configure automatic refresh, check-in detection, or WebDAV synchronization for a more comprehensive user experience.
 :::
+
+## Troubleshooting and Recovery
+
+- If account auto-detection stalls after granting optional permissions, disable and re-enable the extension, then retry.
+- If site verification repeatedly fails on protected domains, complete challenge flow in the temporary window first, then rerun detection.
+- If export/integration calls fail, verify target tool credentials and network reachability before retrying.
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: account and settings data are stored in extension storage.
+- External network transmission occurs only for features you configure/use (for example relay endpoint operations, WebDAV backup/sync, and optional verification workflows).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.
+
+## Related Documentation
+
+- [FAQ](./faq.md)
+- [Permission Management](./permissions.md)
+- [Privacy Policy](./privacy.md)

@@ -1,6 +1,10 @@
 # Flerapii Privacy Policy
 
-Last updated: March 16, 2026
+Last updated: March 25, 2026
+
+Canonical public policy URL (for extension store listings):
+
+- https://flerapii.riteshrana.engineer/privacy.html
 
 This Privacy Policy applies to the Flerapii browser extension.
 
@@ -47,6 +51,23 @@ Flerapii does not provide a first-party cloud storage service for your extension
 
 Flerapii does not share your data with third parties except when you explicitly configure and trigger integrations. Communication only occurs with endpoints required by features you enable.
 
+## Feature-Level Network Behavior
+
+The extension may perform network requests in these user-driven scenarios:
+
+- Relay/API endpoint operations you configure (for account refresh, key/model operations, check-in, or verification)
+- Optional WebDAV backup/sync when configured and enabled by you
+- Optional temporary-window and protection-bypass flows for supported sites
+
+If you do not configure external integrations, extension data remains local to browser extension storage.
+
+## What We Do Not Do
+
+- No first-party telemetry collection backend
+- No ad-tech or marketing trackers
+- No sale of personal data
+- No background export of your data to developer-operated servers
+
 ## Data Retention and Deletion
 
 Data remains available until you remove it.
@@ -84,5 +105,5 @@ For privacy questions or requests, open an issue in the project repository:
 
 Additional privacy documentation:
 
-- ./privacy/privacy.md
-- ./docs/docs/privacy.md
+- https://ambicuity.github.io/flerapii/privacy.html
+- https://github.com/ambicuity/flerapii/blob/main/privacy/chrome-web-store-privacy-checklist.md

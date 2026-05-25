@@ -52,7 +52,9 @@ export default defineUserConfig({
           { text: 'Model Redirect', link: '/model-redirect' },
           { text: 'Sorting Priority', link: '/sorting-priority' },
           { text: 'Permissions', link: '/permissions' },
-          { text: 'Privacy', link: '/privacy' }
+          { text: 'Privacy', link: '/privacy' },
+          { text: 'Chrome Store Submission', link: '/chrome-web-store-submission' },
+          { text: 'Store Data Mapping', link: '/chrome-web-store-data-usage-mapping' }
         ]
       }
     ]

@@ -86,3 +86,9 @@ In the **Settings → Automatic Check-in** panel:
 -   [Auto-refresh and Real-time Data](./auto-refresh.md)
 -   [WebDAV Backup and Automatic Synchronization](./webdav-sync.md)
 -   [Cloudflare Bypass Helper](./cloudflare-helper.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

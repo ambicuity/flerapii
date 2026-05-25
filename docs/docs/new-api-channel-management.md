@@ -82,3 +82,9 @@ If you are debugging in conjunction with **New API Model Synchronization**, you 
 
 - [New API Model List Synchronization](./new-api-model-sync.md): Automatically batch syncs channel models.
 - [Quick Export and Integration](./get-started.md#quick-export-sites): Learn how to push channels to downstream applications.
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.

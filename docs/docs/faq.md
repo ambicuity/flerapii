@@ -127,8 +127,8 @@ The plugin is released on multiple platforms, with varying update speeds:
 | Platform             | Update Speed                               | Version Acquisition                                                              |
 |----------------------|--------------------------------------------|----------------------------------------------------------------------------------|
 | **GitHub Releases**  | ⚡ Fastest                                  | [Download Here](https://github.com/ambicuity/flerapii/releases)               |
-| **Chrome Web Store** | 🐌 Slower (3-5 days review)                | [Install Here](https://chromewebstore.google.com/detail/<chrome-extension-id>) |
-| **Edge Add-ons**     | 🐌 Slower (3-5 days review)                | [Install Here](https://microsoftedge.microsoft.com/addons/detail/<edge-extension-id>) |
+| **Chrome Web Store** | 🐌 Slower (3-5 days review)                | [Install Here](https://chromewebstore.google.com/detail/cocbaodnhomfmikmkgplahalapdbgkjm) |
+| **Edge Add-ons**     | 🐌 Slower (3-5 days review)                | [Search (listing ID pending)](https://microsoftedge.microsoft.com/addons/search/flerapii) |
 | **Firefox Add-ons**  | ⚡ Fast (a few hours review)                | [Install Here](https://addons.mozilla.org/firefox/addon/contact@riteshrana.engineer) |
 
 ::: tip Recommendation
@@ -218,6 +218,19 @@ The plugin supports priority settings for multiple sorting methods:
 2. **Adjust Priority**:
    - Drag sorting conditions to adjust priority.
    - Check/uncheck to enable/disable conditions.
+
+## Privacy and Security Notes
+
+- Flerapii is local-first and stores extension data in browser extension storage by default.
+- Network calls are feature-driven and user-configured (for example relay endpoints, WebDAV backup/sync, and optional verification flows).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.
+
+## Related Documentation
+
+- [Getting Started](./get-started.md)
+- [Permission Management](./permissions.md)
+- [Cloudflare Shield Bypass Assistant](./cloudflare-helper.md)
+- [WebDAV Backup and Automatic Synchronization](./webdav-sync.md)
 
 3. **Available Sorting Conditions**:
    - 📌 Pin Current Site to Top

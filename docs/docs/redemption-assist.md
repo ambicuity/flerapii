@@ -110,6 +110,14 @@ Suggested troubleshooting steps:
 - All API requests are sent directly to the corresponding aggregate site;
 - It is recommended to use it in conjunction with the browser's own password and privacy protection policies, such as browser password management, privacy mode, etc.
 
-## Related Documents
+## Related Documentation
 
 - [Automatic Check-in and Check-in Monitoring](./auto-checkin.md)
+- [Permission Management](./permissions.md)
+- [Privacy Policy](./privacy.md)
+
+## Privacy and Security Notes
+
+- Flerapii is local-first by default: extension configuration and operational data are stored in browser extension storage.
+- External network traffic is feature-driven and user-configured (for example relay endpoint operations, optional WebDAV sync, or explicit integration actions).
+- Canonical privacy policy URL: `https://flerapii.riteshrana.engineer/privacy.html`.
