@@ -1,6 +1,10 @@
 # Flerapii Privacy Policy
 
-Last updated: March 16, 2026
+Last updated: March 25, 2026
+
+Canonical public policy URL (for extension store listings):
+
+- https://flerapii.riteshrana.engineer/privacy.html
 
 ## Overview
 
@@ -58,6 +62,23 @@ Flerapii does not embed third-party analytics or ad trackers.
 
 Third-party network interactions occur only with endpoints required by features you explicitly configure and use.
 
+## Feature-Level Network Behavior
+
+The extension performs network requests only for feature execution you initiate or enable, including:
+
+- relay/API endpoint operations you configure
+- optional WebDAV backup/sync
+- optional protection-bypass and verification workflows on supported sites
+
+Without user-configured integrations, data remains in browser extension storage.
+
+## What We Do Not Do
+
+- We do not run a first-party telemetry backend.
+- We do not embed ad-tech/marketing trackers.
+- We do not sell personal data.
+- We do not exfiltrate extension data to developer-operated servers in the background.
+
 ## Retention and Deletion
 
 Data is retained until removed by you.
@@ -89,13 +110,21 @@ Because Flerapii is local-first and user-controlled, these operations can genera
 
 This policy may be updated as product behavior evolves. Changes are reflected by updating the date at the top of this page.
 
+## Privacy and Security Notes
+
+- This page is the human-readable policy reference. The canonical store-listing URL remains:
+  `https://flerapii.riteshrana.engineer/privacy.html`.
+- Claims in this policy are expected to stay aligned with extension permissions and feature behavior in `wxt.config.ts`.
+
 ## Contact
 
 For privacy questions, open an issue in the repository:
 
 - https://github.com/ambicuity/flerapii/issues
 
-Related policy documents:
+## Related Documentation
 
-- ../../PRIVACY.md
-- ../../privacy/privacy.md
+- https://flerapii.riteshrana.engineer/privacy.html
+- https://github.com/ambicuity/flerapii/blob/main/privacy/chrome-web-store-privacy-checklist.md
+- ./permissions.md
+- ./chrome-web-store-submission.md
