@@ -150,7 +150,8 @@
     "overrides": {
       "lodash-es": ">=4.18.1",
       "uuid": ">=13.0.2",
-      "js-cookie": ">=3.0.7"
+      "js-cookie": ">=3.0.7",
+      "lodash": ">=4.18.1"
     }
   }
 }
