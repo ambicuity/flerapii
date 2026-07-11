@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revamped documentation website with dark minimal design
 - Generated new Flerapii logo
 
+## [1.0.2] - 2026-07-11
+
+### Fixed
+- Shield-bypass content-script handler now returns synchronously so Chrome keeps the message port open (async handler previously dropped the response, breaking the protection-bypass prompt on Chrome).
+- Balance and consumption counters now animate from the previous value to the new value on refresh instead of restarting from zero every time.
+- Invalid/expired access-token troubleshooting hint no longer shows for unrelated auto check-in failures (empty-string keywords made the filter always match).
+- Default API token auto-provisioning is serialized per account to prevent duplicate "user group (auto)" tokens under concurrent callers.
+- `calculateTotalConsumption` is null-safe against incomplete account data so a single malformed account can no longer abort account loading.
+
+### Changed
+- Chrome builds no longer expose the Firefox-only `_execute_sidebar_action` command (it was a bindable-but-dead keyboard shortcut on Chrome).
+- Removed a stale React DevTools dev artifact from packaged builds (smaller extension size).
+- Hardened the GitHub-to-Chrome-Web-Store release pipeline: fail-loud publishing, tag/version guard, frozen-lockfile installs, deterministic zip paths, and a working release trigger.
+
 ## [1.0.0] - 2026-03-15
 
 ### Added
