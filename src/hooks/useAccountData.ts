@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { accountStorage } from "~/services/accounts/accountStorage"
 import type {
@@ -8,6 +8,7 @@ import type {
   DisplaySiteData,
   SiteAccount,
 } from "~/types"
+import { calculateTotalConsumption } from "~/utils/core/formatters"
 import { createLogger } from "~/utils/core/logger"
 
 /**
@@ -81,6 +82,12 @@ export const useAccountData = (): UseAccountDataResult => {
   const [prevBalances, setPrevBalances] = useState<{
     [id: string]: CurrencyAmount
   }>({})
+  // Hold the last-loaded values in refs so a refresh can expose the
+  // previously-displayed balances/consumption as CountUp start values (animate
+  // old -> new instead of 0 -> new). Refs avoid re-creating loadAccountData on
+  // every load, which would otherwise re-trigger its own effect in a loop.
+  const prevBalancesRef = useRef<CurrencyAmountMap>({})
+  const prevTotalConsumptionRef = useRef<CurrencyAmount>({ USD: 0, CNY: 0 })
 
   const enabledAccounts = useMemo(
     () => accounts.filter((account) => account.disabled !== true),
@@ -102,22 +109,26 @@ export const useAccountData = (): UseAccountDataResult => {
       const accountStats = await accountStorage.getAccountStats()
       const displaySiteData = accountStorage.convertToDisplayData(allAccounts)
 
-      //
-      const newBalances: CurrencyAmountMap = {}
+      const nextBalances: CurrencyAmountMap = {}
       displaySiteData.forEach((site) => {
-        newBalances[site.id] = {
-          USD: site.balance.USD,
-          CNY: site.balance.CNY,
+        nextBalances[site.id] = {
+          USD: site.balance?.USD ?? 0,
+          CNY: site.balance?.CNY ?? 0,
         }
       })
+      const nextTotalConsumption = calculateTotalConsumption(
+        accountStats,
+        allAccounts,
+      )
 
-      //
       if (!isInitialLoad) {
-        setPrevTotalConsumption(prevTotalConsumption)
-        setPrevBalances(prevBalances)
+        // Expose the prior load's values as the animation start point.
+        setPrevTotalConsumption(prevTotalConsumptionRef.current)
+        setPrevBalances(prevBalancesRef.current)
       }
+      prevBalancesRef.current = nextBalances
+      prevTotalConsumptionRef.current = nextTotalConsumption
 
-      //
       setAccounts(allAccounts)
       setStats(accountStats)
       setDisplayData(displaySiteData)
@@ -144,7 +155,7 @@ export const useAccountData = (): UseAccountDataResult => {
     } catch (error) {
       logger.error("", error)
     }
-  }, [isInitialLoad, prevTotalConsumption, prevBalances])
+  }, [isInitialLoad])
 
   /**
    * Trigger remote refresh followed by a local reload, bubbling the result

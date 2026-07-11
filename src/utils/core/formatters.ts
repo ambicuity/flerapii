@@ -154,14 +154,17 @@ export const calculateTotalConsumption = (
   stats: AccountStats,
   accounts: any[],
 ) => {
+  // Null-safe: this runs inside account-loading paths, so a single account with
+  // incomplete data must not throw and abort the whole load.
   const usdAmount =
-    stats.today_total_consumption / UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR
+    (stats?.today_total_consumption ?? 0) /
+    UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR
   const cnyAmount = accounts.reduce(
     (sum, acc) =>
       sum +
-      (acc.account_info.today_quota_consumption /
+      ((acc?.account_info?.today_quota_consumption ?? 0) /
         UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR) *
-        acc.exchange_rate,
+        (acc?.exchange_rate ?? 0),
     0,
   )
 
