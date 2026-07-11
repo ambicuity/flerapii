@@ -1,11 +1,11 @@
 import React from "react"
-import CountUp from "react-countup"
 import { useTranslation } from "react-i18next"
 
 import { UI_CONSTANTS } from "~/constants/ui"
 import { useUserPreferencesContext } from "~/contexts/UserPreferencesContext"
 import { useAccountActionsContext } from "~/features/AccountManagement/hooks/AccountActionsContext"
 import { useAccountDataContext } from "~/features/AccountManagement/hooks/AccountDataContext"
+import CountUp from "~/lib/reactCountUp"
 import type { DisplaySiteData } from "~/types"
 import { getCurrencySymbol } from "~/utils/core/formatters"
 import { getDisplayMoneyValue } from "~/utils/core/money"

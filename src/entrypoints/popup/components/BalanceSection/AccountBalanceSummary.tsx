@@ -1,11 +1,11 @@
 import React, { useMemo } from "react"
-import CountUp from "react-countup"
 import { useTranslation } from "react-i18next"
 
 import { Caption } from "~/components/ui"
 import { UI_CONSTANTS } from "~/constants/ui"
 import { useUserPreferencesContext } from "~/contexts/UserPreferencesContext"
 import { useAccountDataContext } from "~/features/AccountManagement/hooks/AccountDataContext"
+import CountUp from "~/lib/reactCountUp"
 import {
   calculateTotalBalance,
   calculateTotalConsumption,

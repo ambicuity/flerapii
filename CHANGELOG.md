@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revamped documentation website with dark minimal design
 - Generated new Flerapii logo
 
+## [1.0.3] - 2026-07-11
+
+### Fixed
+- Fixed the popup (and any surface using animated counters) crashing on open with a blank screen. react-countup 6.x is CommonJS-only and its default `<CountUp>` export was mangled by the bundler into an object, throwing React error #130 and taking down the whole popup. Animated counters now render via an interop-safe wrapper built on react-countup's `useCountUp` hook.
+- Fixed horizontal overflow of the popup at narrow widths (down to 360px). The popup document width was hard-coded to 410px; it now caps at the viewport width so content reflows and the header no longer overflows on small displays.
+
 ## [1.0.2] - 2026-07-11
 
 ### Fixed
