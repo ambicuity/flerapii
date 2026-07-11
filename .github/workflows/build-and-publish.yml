@@ -2,7 +2,9 @@ name: build-and-publish
 
 on:
   release:
-    types: [created] # 自动监听 GitHub Release 发布
+    # `published` fires for both direct publishes and draft->publish flows;
+    # `created` misses the common "save as draft, then publish" pattern.
+    types: [published]
   workflow_dispatch: # 允许手动触发
     inputs:
       tag:
@@ -22,6 +24,12 @@ on:
 
 permissions:
   contents: write # 上传构建产物到 Release 需要写权限
+
+# Never run two store submissions at once (a release + a manual dispatch, or two
+# rapid releases) — they would race on the same version upload.
+concurrency:
+  group: build-and-publish-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -91,17 +99,43 @@ jobs:
           node-version: 20
           cache: "pnpm"
 
-      # 安装依赖
+      # 安装依赖（使用 lockfile 保证与 CI 校验的依赖树一致）
       - name: Install dependencies
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      # 编译并打包扩展
+      # Guard: the built manifest version comes from package.json. On a release,
+      # fail fast if the tag and package.json version disagree — otherwise the
+      # store rejects the upload as a duplicate version (and, historically, that
+      # failure was silently swallowed).
+      - name: Verify release tag matches package.json version
+        if: ${{ github.event_name == 'release' && steps.get_ref.outputs.ref != '' }}
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name }}
+        run: |
+          PKG_VERSION="$(node -p "require('./package.json').version")"
+          RELEASE_VERSION="${RELEASE_TAG#v}"
+          echo "package.json=$PKG_VERSION  release tag=$RELEASE_TAG (normalized=$RELEASE_VERSION)"
+          if [ "$PKG_VERSION" != "$RELEASE_VERSION" ]; then
+            echo "::error::Release tag ($RELEASE_VERSION) does not match package.json version ($PKG_VERSION). Bump package.json before tagging."
+            exit 1
+          fi
+
+      # 编译并打包扩展（先清理 .output，避免历史 zip 干扰后续按版本号定位产物）
       - name: Package the extension
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        run: pnpm zip:all
+        run: |
+          rm -rf .output
+          pnpm zip:all
+          NAME="$(node -p "require('./package.json').name")"
+          VERSION="$(node -p "require('./package.json').version")"
+          {
+            echo "CHROME_ZIP=.output/${NAME}-${VERSION}-chrome.zip"
+            echo "FIREFOX_ZIP=.output/${NAME}-${VERSION}-firefox.zip"
+            echo "SOURCES_ZIP=.output/${NAME}-${VERSION}-sources.zip"
+          } >> "$GITHUB_ENV"
 
-      # 上传 Release Artifact（仅当有 ref 时）
+      # 上传 Release Artifact（非关键步骤，失败不阻断发布）
       - name: Upload Release Artifact
         if: ${{ github.event_name == 'release' && steps.get_ref.outputs.ref != '' }}
         continue-on-error: true
@@ -111,25 +145,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # 提交到浏览器商店
-      - name: Browser Platform Publish
+      # 提交到 Chrome Web Store —— 关键路径，失败必须让整个 job 失败（不再吞掉错误）
+      - name: Publish to Chrome Web Store
         if: ${{ steps.get_ref.outputs.ref != '' }}
-        continue-on-error: true
         run: |
           echo "Chrome review: $([ "$CHROME_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
-          echo "Edge review: $([ "$EDGE_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
-
-          pnpm wxt submit \
-            --chrome-zip .output/*-chrome.zip \
-            --firefox-zip .output/*-firefox.zip --firefox-sources-zip .output/*-sources.zip \
-            --edge-zip .output/*-chrome.zip
+          pnpm wxt submit --chrome-zip "$CHROME_ZIP"
         env:
           CHROME_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_chrome == 'false' }}
-          EDGE_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_edge == 'false' }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
+
+      # 提交到 Firefox / Edge —— 可选路径，凭据缺失或失败不阻断 Chrome 发布结果
+      - name: Publish to Firefox and Edge
+        if: ${{ steps.get_ref.outputs.ref != '' }}
+        continue-on-error: true
+        run: |
+          echo "Edge review: $([ "$EDGE_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
+          pnpm wxt submit \
+            --firefox-zip "$FIREFOX_ZIP" --firefox-sources-zip "$SOURCES_ZIP" \
+            --edge-zip "$CHROME_ZIP"
+        env:
+          EDGE_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_edge == 'false' }}
           FIREFOX_EXTENSION_ID: ${{ secrets.FIREFOX_EXTENSION_ID }}
           FIREFOX_JWT_ISSUER: ${{ secrets.FIREFOX_JWT_ISSUER }}
           FIREFOX_JWT_SECRET: ${{ secrets.FIREFOX_JWT_SECRET }}

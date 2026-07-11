@@ -55,11 +55,15 @@ export default defineConfig({
         },
       },
       commands: {
-        _execute_sidebar_action: {
-          description: "__MSG_manifest_commands_sidebar_action__",
-        },
+        // `_execute_sidebar_action` is a Firefox-only reserved command (paired
+        // with `sidebarAction`). Chrome has no reserved command to auto-open a
+        // side panel and there is no `commands.onCommand` listener to handle it,
+        // so exposing it on Chromium yields a bindable-but-dead shortcut.
         ...(env.browser === "firefox"
           ? {
+              _execute_sidebar_action: {
+                description: "__MSG_manifest_commands_sidebar_action__",
+              },
               _execute_browser_action: {
                 description: "__MSG_manifest_commands_browser_action__",
               },

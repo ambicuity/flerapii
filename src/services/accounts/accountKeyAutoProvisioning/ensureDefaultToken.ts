@@ -1,8 +1,11 @@
 import { getApiService } from "~/services/apiService"
 import type { CreateTokenRequest } from "~/services/apiService/common/type"
+import { withExtensionStorageWriteLock } from "~/services/core/storageWriteLock"
 import type { ApiToken, DisplaySiteData, SiteAccount } from "~/types"
 
 export const DEFAULT_AUTO_PROVISION_TOKEN_NAME = "user group (auto)"
+
+const AUTO_PROVISION_TOKEN_LOCK_PREFIX = "auto-provision-token:"
 
 /**
  * Generates the default token payload used by key auto-provisioning flows.
@@ -34,6 +37,24 @@ export async function ensureDefaultApiTokenForAccount(params: {
   displaySiteData: DisplaySiteData
 }): Promise<{ token: ApiToken; created: boolean }> {
   const { account, displaySiteData } = params
+  // Serialize provisioning per account so two concurrent callers (e.g. a bulk
+  // repair run and an interactive key dialog) don't both observe an empty token
+  // list and each create a duplicate "user group (auto)" token (TOCTOU). The
+  // lock is cross-context via the Web Locks API where available.
+  return withExtensionStorageWriteLock(
+    `${AUTO_PROVISION_TOKEN_LOCK_PREFIX}${account.id}`,
+    () => provisionDefaultApiTokenForAccount(account, displaySiteData),
+  )
+}
+
+/**
+ * Core token-provisioning logic. Must run under the per-account lock acquired
+ * by {@link ensureDefaultApiTokenForAccount}; do not call directly.
+ */
+async function provisionDefaultApiTokenForAccount(
+  account: SiteAccount,
+  displaySiteData: DisplaySiteData,
+): Promise<{ token: ApiToken; created: boolean }> {
   const service = getApiService(displaySiteData.siteType)
 
   const tokens = await service.fetchAccountTokens({

@@ -43,6 +43,7 @@ import {
   onTabRemoved,
   onTabUpdated,
 } from "~/utils/browser/browserApi"
+import { calculateTotalConsumption } from "~/utils/core/formatters"
 import { createLogger } from "~/utils/core/logger"
 import { tryParseOrigin } from "~/utils/core/urlParsing"
 
@@ -142,6 +143,12 @@ export const AccountDataProvider = ({
   const [prevTotalConsumption, setPrevTotalConsumption] =
     useState<CurrencyAmount>({ USD: 0, CNY: 0 })
   const [prevBalances, setPrevBalances] = useState<CurrencyAmountMap>({})
+  // Hold the last-loaded balances/consumption in refs so a refresh can expose
+  // the previously-displayed values as CountUp start values (animate old -> new
+  // instead of 0 -> new). Refs — not state — avoid re-creating loadAccountData
+  // on every load, which would otherwise re-trigger its own effect in a loop.
+  const prevBalancesRef = useRef<CurrencyAmountMap>({})
+  const prevTotalConsumptionRef = useRef<CurrencyAmount>({ USD: 0, CNY: 0 })
   const [sortField, setSortField] = useState<SortField>(initialSortField)
   const [sortOrder, setSortOrder] = useState<SortOrder>(initialSortOrder)
   const [detectedSiteAccounts, setDetectedSiteAccounts] = useState<
@@ -395,10 +402,25 @@ export const AccountDataProvider = ({
         ),
       )
 
+      const nextBalances: CurrencyAmountMap = {}
+      displaySiteData.forEach((site) => {
+        nextBalances[site.id] = {
+          USD: site.balance?.USD ?? 0,
+          CNY: site.balance?.CNY ?? 0,
+        }
+      })
+      const nextTotalConsumption = calculateTotalConsumption(
+        accountStats,
+        allAccounts,
+      )
+
       if (!isInitialLoad) {
-        setPrevTotalConsumption(prevTotalConsumption)
-        setPrevBalances(prevBalances)
+        // Expose the prior load's values as the animation start point.
+        setPrevTotalConsumption(prevTotalConsumptionRef.current)
+        setPrevBalances(prevBalancesRef.current)
       }
+      prevBalancesRef.current = nextBalances
+      prevTotalConsumptionRef.current = nextTotalConsumption
 
       setAccounts(allAccounts)
       setBookmarks(allBookmarks)
@@ -430,12 +452,7 @@ export const AccountDataProvider = ({
     } catch (error) {
       logger.error("Failed to load account data", error)
     }
-  }, [
-    buildDisplayDataWithResolvedTags,
-    isInitialLoad,
-    prevTotalConsumption,
-    prevBalances,
-  ])
+  }, [buildDisplayDataWithResolvedTags, isInitialLoad])
 
   /**
    * Tag CRUD actions exposed to UIs (AccountDialog, filters).

@@ -17,13 +17,13 @@ export function stripAutoCheckinMessageKeyPrefix(messageKey: string): string {
 
 const INVALID_ACCESS_TOKEN_STRICT_SNIPPET = "access token "
 const INVALID_ACCESS_TOKEN_KEYWORD = "access token"
-const INVALID_ACCESS_TOKEN_HINT_KEYWORDS = [
-  "",
-  "",
-  "",
-  "invalid",
-  "expired",
-] as const
+// Message must contain the base "access token" keyword AND one of these hint
+// keywords to be treated as an invalid/expired-token failure. Empty-string
+// entries were previously present here; they made `.some(includes)` always
+// true because `"".includes("")` is `true`, collapsing the filter down to just
+// "access token" and producing false-positive "invalid/expired token" hints
+// for unrelated failures (e.g. "missing access token configuration").
+const INVALID_ACCESS_TOKEN_HINT_KEYWORDS = ["invalid", "expired"] as const
 
 /**
  * Heuristic: detect messages that indicate an invalid/expired access token.
