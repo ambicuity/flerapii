@@ -1,6 +1,5 @@
-import CountUp from "react-countup"
-
 import { UI_CONSTANTS } from "~/constants/ui"
+import CountUp from "~/lib/reactCountUp"
 
 /**
  * AnimatedStatValue component animates the display of a numeric value using react-countup.
