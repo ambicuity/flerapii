@@ -15,4 +15,11 @@ jobs:
     steps:
       - uses: googleapis/release-please-action@v4
         with:
+          # A release created with the default GITHUB_TOKEN does NOT emit a
+          # `release` event (GitHub's anti-recursion rule), so build-and-publish
+          # would never fire and nothing reaches the store. Provide a PAT (or a
+          # GitHub App token) named RELEASE_PLEASE_TOKEN so the created release
+          # propagates and triggers the CWS publish. Falls back to GITHUB_TOKEN
+          # (opens the release PR, but auto-publish stays manual) when unset.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
           release-type: node
