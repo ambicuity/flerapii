@@ -17,6 +17,7 @@ import {
   type SiteAccount,
   type SiteBookmark,
 } from "~/types"
+import { formatLocalDayKey } from "~/utils/core/formatters"
 
 const storageData = new Map<string, any>()
 
@@ -537,7 +538,7 @@ describe("accountStorage core behaviors", () => {
     seedStorage([account])
 
     try {
-      const today = fixedNow.toISOString().split("T")[0]
+      const today = formatLocalDayKey(fixedNow)
       const success = await accountStorage.markAccountAsSiteCheckedIn("check-1")
 
       expect(success).toBe(true)
@@ -570,7 +571,7 @@ describe("accountStorage core behaviors", () => {
     })
     seedStorage([account])
 
-    const today = new Date().toISOString().split("T")[0]
+    const today = formatLocalDayKey()
     const success =
       await accountStorage.markAccountAsCustomCheckedIn("custom-1")
 
@@ -582,6 +583,70 @@ describe("accountStorage core behaviors", () => {
     expect(updatedAccount?.checkIn?.customCheckIn?.isCheckedInToday).toBe(true)
     expect(updatedAccount?.checkIn?.customCheckIn?.lastCheckInDate).toBe(today)
   })
+
+  // Pick local times where the local calendar day differs from the UTC day for
+  // whatever timezone the test runner is in (skipped on a UTC machine).
+  const tzOffsetMinutes = new Date(2026, 9, 1, 12).getTimezoneOffset()
+  it.skipIf(tzOffsetMinutes === 0)(
+    "custom check-in uses the local calendar day, not the UTC day",
+    async () => {
+      const eastOfUtc = tzOffsetMinutes < 0
+      // East of UTC: just after local midnight is still "yesterday" in UTC.
+      // West of UTC: just before local midnight is already "tomorrow" in UTC.
+      const checkInAt = eastOfUtc
+        ? new Date(2026, 9, 2, 0, 30)
+        : new Date(2026, 9, 1, 23, 30)
+      const expectedDay = eastOfUtc ? "2026-10-02" : "2026-10-01"
+      const laterSameLocalDay = eastOfUtc
+        ? new Date(2026, 9, 2, 23, 0)
+        : new Date(2026, 9, 1, 23, 45)
+      const nextLocalDay = eastOfUtc
+        ? new Date(2026, 9, 3, 9, 0)
+        : new Date(2026, 9, 2, 9, 0)
+
+      vi.useFakeTimers({ toFake: ["Date"] })
+      try {
+        vi.setSystemTime(checkInAt)
+        seedStorage([
+          createAccount({
+            id: "custom-tz",
+            checkIn: {
+              enableDetection: true,
+              customCheckIn: {
+                url: "https://example.com/check",
+                isCheckedInToday: false,
+              },
+            },
+          }),
+        ])
+
+        await accountStorage.markAccountAsCustomCheckedIn("custom-tz")
+
+        const findStored = async () =>
+          (await accountStorage.getAllAccounts()).find(
+            (acc) => acc.id === "custom-tz",
+          )
+
+        expect(
+          (await findStored())?.checkIn?.customCheckIn?.lastCheckInDate,
+        ).toBe(expectedDay)
+
+        vi.setSystemTime(laterSameLocalDay)
+        await accountStorage.resetExpiredCheckIns()
+        expect(
+          (await findStored())?.checkIn?.customCheckIn?.isCheckedInToday,
+        ).toBe(true)
+
+        vi.setSystemTime(nextLocalDay)
+        await accountStorage.resetExpiredCheckIns()
+        expect(
+          (await findStored())?.checkIn?.customCheckIn?.isCheckedInToday,
+        ).toBe(false)
+      } finally {
+        vi.useRealTimers()
+      }
+    },
+  )
 
   it("getAccountStats should aggregate numeric fields across accounts", async () => {
     const accountA = createAccount({
@@ -785,7 +850,7 @@ describe("accountStorage core behaviors", () => {
         customCheckIn: {
           url: "https://example.com/check",
           isCheckedInToday: true,
-          lastCheckInDate: new Date().toISOString().split("T")[0],
+          lastCheckInDate: formatLocalDayKey(),
         },
       },
     })

@@ -153,6 +153,60 @@ describe("AddTokenDialog prefill", () => {
     })
   })
 
+  it("preserves an existing expiry time when editing without changing it", async () => {
+    fetchAccountAvailableModelsMock.mockResolvedValueOnce(["gpt-4"])
+    fetchUserGroupsMock.mockResolvedValueOnce({
+      default: { desc: "default", ratio: 1 },
+    })
+    updateApiTokenMock.mockResolvedValueOnce(true)
+
+    // Whole-minute local time far in the future (datetime-local drops seconds).
+    const expiredTime = Math.floor(
+      new Date(2099, 0, 15, 12, 30).getTime() / 1000,
+    )
+
+    const editingToken = {
+      id: 456,
+      accountId: ACCOUNT.id,
+      accountName: ACCOUNT.name,
+      name: "Expiring key",
+      remain_quota: -1,
+      expired_time: expiredTime,
+      unlimited_quota: true,
+      model_limits_enabled: false,
+      model_limits: "",
+      allow_ips: "",
+      group: "default",
+    } as any
+
+    const user = userEvent.setup()
+
+    render(
+      <AddTokenDialog
+        isOpen={true}
+        onClose={() => {}}
+        availableAccounts={[ACCOUNT]}
+        preSelectedAccountId={ACCOUNT.id}
+        editingToken={editingToken}
+      />,
+    )
+
+    await screen.findByDisplayValue("Expiring key")
+    expect(screen.getByDisplayValue("2099-01-15T12:30")).toBeInTheDocument()
+
+    await user.click(
+      screen.getByRole("button", { name: "keyManagement:dialog.updateToken" }),
+    )
+
+    await waitFor(() => {
+      expect(updateApiTokenMock).toHaveBeenCalledTimes(1)
+    })
+
+    expect(updateApiTokenMock.mock.calls[0]?.[2]).toMatchObject({
+      expired_time: expiredTime,
+    })
+  })
+
   it("falls back to the localized create failure message when the error is blank", async () => {
     fetchAccountAvailableModelsMock.mockResolvedValueOnce(["gpt-4", "gpt-3.5"])
     fetchUserGroupsMock.mockResolvedValueOnce({
