@@ -1159,3 +1159,67 @@ describe("WebdavAutoSyncService local apply phase", () => {
     expect(mockUploadBackup).not.toHaveBeenCalled()
   })
 })
+
+describe("WebdavAutoSyncService.syncNow overlap guard", () => {
+  const createService = () => new (webdavAutoSyncService as any).constructor()
+
+  it("rejects a second manual sync while the first is still running", async () => {
+    const service = createService()
+    const releasers: Array<() => void> = []
+    const releaseFirst = () => releasers.forEach((release) => release())
+    const syncWithWebdav = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releasers.push(resolve)
+        }),
+    )
+    service.syncWithWebdav = syncWithWebdav
+
+    const first = service.syncNow()
+    const secondPromise = service.syncNow()
+    await Promise.resolve()
+
+    expect(syncWithWebdav).toHaveBeenCalledTimes(1)
+
+    releaseFirst()
+    const [firstResult, secondResult] = await Promise.all([
+      first,
+      secondPromise,
+    ])
+    expect(firstResult).toMatchObject({ success: true })
+    expect(secondResult.success).toBe(false)
+    expect(service.getStatus().isSyncing).toBe(false)
+  })
+
+  it("blocks the alarm-driven background sync while a manual sync is running", async () => {
+    const service = createService()
+    const releasers: Array<() => void> = []
+    const releaseFirst = () => releasers.forEach((release) => release())
+    const syncWithWebdav = vi.fn(
+      () =>
+        new Promise<void>((resolve) => {
+          releasers.push(resolve)
+        }),
+    )
+    service.syncWithWebdav = syncWithWebdav
+
+    const manual = service.syncNow()
+    const background = service.performBackgroundSync()
+    await Promise.resolve()
+
+    expect(syncWithWebdav).toHaveBeenCalledTimes(1)
+
+    releaseFirst()
+    await Promise.all([manual, background])
+  })
+
+  it("clears the syncing flag when a manual sync fails", async () => {
+    const service = createService()
+    service.syncWithWebdav = vi.fn().mockRejectedValue(new Error("boom"))
+
+    const result = await service.syncNow()
+
+    expect(result.success).toBe(false)
+    expect(service.getStatus().isSyncing).toBe(false)
+  })
+})

@@ -72,6 +72,38 @@ describe("webdavService", () => {
       expect((init as RequestInit).method).toBe("GET")
     })
 
+    it("encodes non-Latin-1 credentials as UTF-8 in the Basic auth header", async () => {
+      mockedUserPreferences.getPreferences.mockResolvedValue({
+        webdav: {
+          ...basePrefs.webdav,
+          username: "用户",
+          password: "密码🔑",
+        },
+      })
+      globalAny.fetch.mockResolvedValue({ status: 200 })
+
+      await expect(testWebdavConnection()).resolves.toBe(true)
+
+      const [, init] = globalAny.fetch.mock.calls[0]
+      const header = (init as RequestInit).headers as Record<string, string>
+      const token = header.Authorization.replace(/^Basic /, "")
+      const decoded = new TextDecoder().decode(
+        Uint8Array.from(atob(token), (char) => char.charCodeAt(0)),
+      )
+      expect(decoded).toBe("用户:密码🔑")
+    })
+
+    it("keeps ASCII credentials byte-identical to plain btoa", async () => {
+      mockedUserPreferences.getPreferences.mockResolvedValue(basePrefs)
+      globalAny.fetch.mockResolvedValue({ status: 200 })
+
+      await testWebdavConnection()
+
+      const [, init] = globalAny.fetch.mock.calls[0]
+      const header = (init as RequestInit).headers as Record<string, string>
+      expect(header.Authorization).toBe(`Basic ${btoa("user:pass")}`)
+    })
+
     it("returns true when status is 404 (file missing but auth ok)", async () => {
       mockedUserPreferences.getPreferences.mockResolvedValue(basePrefs)
       globalAny.fetch.mockResolvedValue({ status: 404 })

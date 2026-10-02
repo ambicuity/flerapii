@@ -10,10 +10,17 @@ import {
 
 /**
  * Builds a Basic Authorization header value from WebDAV username and password.
+ *
+ * Credentials are UTF-8 encoded first (RFC 7617 `charset="UTF-8"`): plain `btoa`
+ * throws on characters above U+00FF (e.g. CJK or emoji passwords).
  */
 function buildAuthHeader(username: string, password: string) {
-  const token = btoa(`${username}:${password}`)
-  return `Basic ${token}`
+  const bytes = new TextEncoder().encode(`${username}:${password}`)
+  let binary = ""
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte)
+  }
+  return `Basic ${btoa(binary)}`
 }
 
 /**
