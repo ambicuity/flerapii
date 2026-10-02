@@ -96,6 +96,23 @@ async function waitForUpload(extensionId, token) {
   )
 }
 
+// The upload response omits crxVersion; the DRAFT projection carries it.
+// Only used for logging, so a lookup failure must not fail the publish.
+async function fetchDraftVersion(extensionId, token) {
+  try {
+    const item = await callApi(
+      `${API_BASE}/${extensionId}?projection=DRAFT`,
+      token,
+    )
+    return item.crxVersion
+  } catch (error) {
+    console.warn(
+      `Could not read draft version: ${error instanceof Error ? error.message : error}`,
+    )
+    return undefined
+  }
+}
+
 async function main() {
   const zipPath = process.argv[2]
   if (!zipPath)
@@ -124,9 +141,9 @@ async function main() {
   if (item.uploadState !== "SUCCESS") {
     throw new Error(`Upload failed: ${JSON.stringify(item.itemError ?? item)}`)
   }
-  console.log(
-    `Upload succeeded: draft version ${item.crxVersion ?? "(unknown)"}`,
-  )
+  const draftVersion =
+    item.crxVersion ?? (await fetchDraftVersion(extensionId, token))
+  console.log(`Upload succeeded: draft version ${draftVersion ?? "(unknown)"}`)
 
   if (skipReview) {
     console.log("CHROME_SKIP_SUBMIT_REVIEW=true, leaving the upload as a draft")
