@@ -8,7 +8,8 @@
 // Usage:
 //   node scripts/publish-chrome-webstore.mjs <chrome-zip>  upload and submit
 //   node scripts/publish-chrome-webstore.mjs --status      print review status;
-//     same as `pnpm cws:status`. Exits 1 if the submission was rejected/cancelled or the item taken down
+//     same as `pnpm cws:status`. Exits 1 if the submission was
+//     rejected/cancelled or the item taken down
 // Env:
 //   CHROME_SERVICE_ACCOUNT_JSON  service-account key file contents (required)
 //   CHROME_EXTENSION_ID          store item id (required)
