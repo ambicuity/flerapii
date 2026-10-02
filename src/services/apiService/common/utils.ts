@@ -167,14 +167,18 @@ const createBaseRequest = (
     ...(method !== "GET" ? { "Content-Type": "application/json" } : {}),
   }
 
+  const { headers: extraHeaders, ...restOptions } = options
+
+  // Spread caller options first so their `headers` cannot replace the merged
+  // auth/user-id/content-type defaults below.
   return {
+    credentials,
+    ...restOptions,
     method,
     headers: {
       ...defaultHeaders,
-      ...(options.headers || {}), //  headers
+      ...(extraHeaders || {}),
     },
-    credentials,
-    ...options,
   }
 }
 
@@ -363,9 +367,8 @@ const _fetchApi = async <T>(
     // Only resolve account info when caller didn't provide an accountId. This is
     // intentionally a dynamic import to avoid a static import cycle between
     // apiService and accountStorage.
-    const { accountStorage } = await import(
-      "~/services/accounts/accountStorage"
-    )
+    const { accountStorage } =
+      await import("~/services/accounts/accountStorage")
     accountInfo = await accountStorage.getAccountByBaseUrlAndUserId(
       baseUrl,
       userId,
