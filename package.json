@@ -24,6 +24,7 @@
     "zip": "wxt zip",
     "zip:firefox": "wxt zip -b firefox",
     "zip:all": "pnpm run zip && pnpm run zip:firefox",
+    "cws:status": "node scripts/publish-chrome-webstore.mjs --status",
     "compile": "tsc --noEmit",
     "postinstall": "wxt prepare",
     "lint": "eslint .",
