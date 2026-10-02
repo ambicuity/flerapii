@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0](https://github.com/ambicuity/flerapii/compare/v1.0.3...v1.1.0) (2026-10-02)
+
+
+### Features
+
+* **publish:** add a Chrome Web Store review status check ([7cf184d](https://github.com/ambicuity/flerapii/commit/7cf184dd5677804f672657529df011bfb4da645b))
+* **publish:** add a Chrome Web Store review status check ([8681013](https://github.com/ambicuity/flerapii/commit/868101335f1ed4b0288411779727b56fd4d76f4d))
+
+
+### Bug Fixes
+
+* **publish:** log the real draft version after a Chrome Web Store upload ([d5beffd](https://github.com/ambicuity/flerapii/commit/d5beffdf7a3eb9ccf49f4557b19c1f065d415fdf))
+* **publish:** log the real draft version after a Chrome Web Store upload ([9f3d40a](https://github.com/ambicuity/flerapii/commit/9f3d40a14c9f8d3e5df699fd7a49f42c11ae4c27))
+
 ## [Unreleased]
 
 ### Added
