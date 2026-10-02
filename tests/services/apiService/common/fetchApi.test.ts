@@ -131,6 +131,43 @@ describe("apiService common fetchApi helpers", () => {
     expect(result).toEqual(data)
   })
 
+  it("keeps auth and user-id headers when the caller passes extra headers", async () => {
+    let capturedHeaders: Headers | null = null
+
+    server.use(
+      http.post(API_URL, ({ request }) => {
+        capturedHeaders = request.headers
+        return HttpResponse.json({ success: true, data: {}, message: "ok" })
+      }),
+    )
+
+    await fetchApiData(
+      {
+        baseUrl: BASE_URL,
+        auth: {
+          authType: AuthTypeEnum.AccessToken,
+          userId: 123,
+          accessToken: "token",
+        },
+      },
+      {
+        endpoint: ENDPOINT,
+        options: {
+          method: "POST",
+          body: "{}",
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+        },
+      },
+    )
+
+    expect(capturedHeaders).not.toBeNull()
+    const headers = capturedHeaders as unknown as Headers
+    expect(headers.get("x-requested-with")).toBe("XMLHttpRequest")
+    expect(headers.get("authorization")).toBe("Bearer token")
+    expect(headers.get("new-api-user")).toBe("123")
+    expect(headers.get("content-type")).toContain("application/json")
+  })
+
   it("fetchApi should unwrap ApiResponse when _normalResponseType is true", async () => {
     const payload = { models: [{ name: "models/gemini-1.5-pro" }] }
     server.use(

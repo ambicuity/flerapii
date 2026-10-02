@@ -26,6 +26,7 @@ import type { DailyBalanceHistoryCaptureSource } from "~/types/dailyBalanceHisto
 import { DeepPartial } from "~/types/utils"
 import { deepOverride } from "~/utils"
 import { getErrorMessage } from "~/utils/core/error"
+import { formatLocalDayKey } from "~/utils/core/formatters"
 import { safeRandomUUID } from "~/utils/core/identifier"
 import { createLogger } from "~/utils/core/logger"
 import { t } from "~/utils/i18n/core"
@@ -644,7 +645,7 @@ class AccountStorageService {
       }
 
       const today = new Date()
-      const todayDate = today.toISOString().split("T")[0]
+      const todayDate = formatLocalDayKey(today)
       const detectedAt = today.getTime()
       const currentCheckIn = account.checkIn
 
@@ -686,7 +687,7 @@ class AccountStorageService {
       }
 
       const today = new Date()
-      const todayDate = today.toISOString().split("T")[0]
+      const todayDate = formatLocalDayKey(today)
       const currentCheckIn = account.checkIn
 
       return this.updateAccount(id, {
@@ -710,7 +711,7 @@ class AccountStorageService {
    */
   async resetExpiredCheckIns(): Promise<void> {
     try {
-      const today = new Date().toISOString().split("T")[0]
+      const today = formatLocalDayKey()
       const didReset = await this.mutateStorageConfig((config) => {
         const accounts = config.accounts
         let needsSave = false
@@ -846,7 +847,7 @@ class AccountStorageService {
             : undefined
 
         // Merge API check-in status (siteStatus) with local custom check-in state.
-        const today = new Date().toISOString().split("T")[0]
+        const today = formatLocalDayKey()
         const nextCheckIn = { ...(result.data.checkIn ?? account.checkIn) }
 
         if (

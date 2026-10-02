@@ -50,7 +50,17 @@ export async function fetchCheckInStatus(
       site_url: request.baseUrl,
       account_info: { id: numericUserId },
     })
-    return checkInData.status !== CHECKIN_RESULT_STATUS.ALREADY_CHECKED
+    // AnyRouter has no read-only status endpoint, so detection performs the
+    // check-in POST itself: SUCCESS means the user is now checked in today.
+    switch (checkInData.status) {
+      case CHECKIN_RESULT_STATUS.SUCCESS:
+      case CHECKIN_RESULT_STATUS.ALREADY_CHECKED:
+        return false
+      case CHECKIN_RESULT_STATUS.FAILED:
+        return true
+      default:
+        return undefined
+    }
   } catch (error) {
     logger.warn("", error)
     return undefined //

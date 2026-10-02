@@ -149,7 +149,7 @@ export function detectCloudflareChallengePage(): CloudflareChallengeDetection {
     titleLower.includes("just a moment") ||
     titleLower.includes("checking your browser") ||
     titleLower.includes("attention required") ||
-    title.includes("")
+    title.includes("请稍候")
 
   const hasTurnstile = (() => {
     try {

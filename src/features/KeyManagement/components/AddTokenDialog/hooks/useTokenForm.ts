@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next"
 
 import { UI_CONSTANTS } from "~/constants/ui"
 import type { AccountToken } from "~/types"
+import { formatLocalDateTimeInputValue } from "~/utils/core/formatters"
 
 // We duplicate some types here to avoid circular dependencies
 // if we were to import them directly from the AddTokenDialog component.
@@ -119,9 +120,9 @@ export function useTokenForm({
           expiredTime:
             editingToken.expired_time === -1
               ? ""
-              : new Date(editingToken.expired_time * 1000)
-                  .toISOString()
-                  .slice(0, 16),
+              : formatLocalDateTimeInputValue(
+                  new Date(editingToken.expired_time * 1000),
+                ),
           unlimitedQuota: editingToken.unlimited_quota,
           modelLimitsEnabled: editingToken.model_limits_enabled || false,
           modelLimits: editingToken.model_limits

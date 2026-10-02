@@ -54,6 +54,55 @@ describe("apiService wong", () => {
     expect(canCheckIn).toBe(true)
   })
 
+  it.each(["ok", "success", "查询成功"])(
+    "fetchCheckInStatus returns true for a non-empty unrelated message (%s) when checked_in is false",
+    async (message) => {
+      const { fetchApi } = await import("~/services/apiService/common/utils")
+      vi.mocked(fetchApi).mockResolvedValueOnce({
+        success: true,
+        message,
+        data: {
+          enabled: true,
+          checked_in: false,
+        },
+      })
+
+      const canCheckIn = await fetchCheckInStatus({
+        baseUrl: "https://wong.example.com",
+        auth: {
+          authType: AuthTypeEnum.AccessToken,
+          userId: 1,
+          accessToken: "token",
+        },
+      } as any)
+
+      expect(canCheckIn).toBe(true)
+    },
+  )
+
+  it.each(["今天已经签到过了", "您今日已签到"])(
+    "fetchCheckInStatus returns false for a Chinese already-checked message (%s)",
+    async (message) => {
+      const { fetchApi } = await import("~/services/apiService/common/utils")
+      vi.mocked(fetchApi).mockResolvedValueOnce({
+        success: false,
+        message,
+        data: undefined,
+      })
+
+      const canCheckIn = await fetchCheckInStatus({
+        baseUrl: "https://wong.example.com",
+        auth: {
+          authType: AuthTypeEnum.AccessToken,
+          userId: 1,
+          accessToken: "token",
+        },
+      } as any)
+
+      expect(canCheckIn).toBe(false)
+    },
+  )
+
   it("fetchCheckInStatus returns undefined when enabled is false", async () => {
     const { fetchApi } = await import("~/services/apiService/common/utils")
     vi.mocked(fetchApi).mockResolvedValueOnce({

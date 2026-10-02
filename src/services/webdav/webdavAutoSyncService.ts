@@ -1023,6 +1023,9 @@ class WebdavAutoSyncService {
       }
     }
 
+    // Claim the flag before any await so a concurrent alarm-driven or manual run
+    // cannot interleave its download/merge/upload cycle with this one.
+    this.isSyncing = true
     try {
       logger.info("")
       await this.syncWithWebdav()
@@ -1042,6 +1045,8 @@ class WebdavAutoSyncService {
         success: false,
         message: getErrorMessage(error),
       }
+    } finally {
+      this.isSyncing = false
     }
   }
 

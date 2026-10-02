@@ -93,6 +93,7 @@ vi.mock("~/entrypoints/background/servicesInit", () => ({
 
 vi.mock("~/entrypoints/background/actionClickBehavior", () => ({
   applyActionClickBehavior: mocks.applyActionClickBehavior,
+  registerActionClickListenerEarly: vi.fn(),
 }))
 
 vi.mock("~/services/tags/tagStorage", () => ({
