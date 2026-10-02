@@ -148,12 +148,19 @@ jobs:
       # 提交到 Chrome Web Store —— 关键路径，失败必须让整个 job 失败（不再吞掉错误）
       - name: Publish to Chrome Web Store
         if: ${{ steps.get_ref.outputs.ref != '' }}
+        # Prefer the service-account key (CHROME_SERVICE_ACCOUNT_JSON); fall back
+        # to the OAuth refresh-token flow of `wxt submit` when it is not set.
         run: |
           echo "Chrome review: $([ "$CHROME_SKIP_SUBMIT_REVIEW" = "true" ] && echo skipped || echo submitted)"
-          pnpm wxt submit --chrome-zip "$CHROME_ZIP"
+          if [ -n "$CHROME_SERVICE_ACCOUNT_JSON" ]; then
+            node scripts/publish-chrome-webstore.mjs "$CHROME_ZIP"
+          else
+            pnpm wxt submit --chrome-zip "$CHROME_ZIP"
+          fi
         env:
           CHROME_SKIP_SUBMIT_REVIEW: ${{ github.event.inputs.review_chrome == 'false' }}
           CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_SERVICE_ACCOUNT_JSON }}
           CHROME_CLIENT_ID: ${{ secrets.CHROME_CLIENT_ID }}
           CHROME_CLIENT_SECRET: ${{ secrets.CHROME_CLIENT_SECRET }}
           CHROME_REFRESH_TOKEN: ${{ secrets.CHROME_REFRESH_TOKEN }}
