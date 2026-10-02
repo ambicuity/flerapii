@@ -65,9 +65,9 @@ function isTurnstileRequiredMessage(message: string): boolean {
     normalized.includes("verify") ||
     normalized.includes("invalid") ||
     normalized.includes("failed") ||
-    message.includes("") ||
-    message.includes("") ||
-    message.includes("")
+    message.includes("验证") ||
+    message.includes("校验") ||
+    message.includes("失败")
   )
 }
 

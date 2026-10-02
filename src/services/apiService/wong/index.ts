@@ -116,8 +116,8 @@ const normalizeMessage = (message: unknown): string =>
 const isAlreadyCheckedMessage = (message: string): boolean => {
   const normalized = message.toLowerCase()
   return (
-    normalized.includes("") ||
-    normalized.includes("") ||
+    normalized.includes("已签到") ||
+    normalized.includes("已经签到") ||
     normalized.includes("already")
   )
 }
