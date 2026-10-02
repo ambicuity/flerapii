@@ -5,10 +5,16 @@
 // The service account's email must be added to the Chrome Web Store developer
 // account (Developer Dashboard → Account → Service accounts).
 //
-// Usage: node scripts/publish-chrome-webstore.mjs <chrome-zip>
+// Usage:
+//   node scripts/publish-chrome-webstore.mjs <chrome-zip>  upload and submit
+//   node scripts/publish-chrome-webstore.mjs --status      print review status;
+//     exits 1 if the submission was rejected/cancelled or the item taken down
 // Env:
 //   CHROME_SERVICE_ACCOUNT_JSON  service-account key file contents (required)
 //   CHROME_EXTENSION_ID          store item id (required)
+//   CHROME_PUBLISHER_ID          publisher id from the dashboard's Account page
+//                                (required for --status; optional otherwise,
+//                                when set the status is logged after publishing)
 //   CHROME_SKIP_SUBMIT_REVIEW    "true" to upload the draft without publishing
 import { createSign } from "node:crypto"
 import { readFile } from "node:fs/promises"
@@ -20,6 +26,8 @@ const UPLOAD_BASE =
 const UPLOAD_POLL_INTERVAL_MS = 5_000
 const UPLOAD_POLL_ATTEMPTS = 24
 const PUBLISH_OK_STATUSES = new Set(["OK", "ITEM_PENDING_REVIEW"])
+const STATUS_BASE = "https://chromewebstore.googleapis.com/v2/publishers"
+const FAILED_REVIEW_STATES = new Set(["REJECTED", "CANCELLED"])
 
 function requireEnv(name) {
   const value = process.env[name]
@@ -113,16 +121,57 @@ async function fetchDraftVersion(extensionId, token) {
   }
 }
 
+function describeRevision(revision) {
+  if (!revision?.state) return "none"
+  const versions = (revision.distributionChannels ?? [])
+    .map((channel) => `${channel.crxVersion} @ ${channel.deployPercentage}%`)
+    .join(", ")
+  return versions ? `${revision.state} (${versions})` : revision.state
+}
+
+// Review state comes from the v2 API, which (unlike v1.1) needs the publisher id.
+async function fetchReviewStatus(publisherId, extensionId, token) {
+  const status = await callApi(
+    `${STATUS_BASE}/${publisherId}/items/${extensionId}:fetchStatus`,
+    token,
+  )
+  console.log(
+    `Submitted revision: ${describeRevision(status.submittedItemRevisionStatus)}`,
+  )
+  console.log(
+    `Published revision: ${describeRevision(status.publishedItemRevisionStatus)}`,
+  )
+  if (status.takenDown) console.log("Item is TAKEN DOWN")
+  if (status.warned) console.log("Item has a policy warning")
+  return status
+}
+
+async function checkStatus(extensionId, token) {
+  const publisherId = requireEnv("CHROME_PUBLISHER_ID")
+  const status = await fetchReviewStatus(publisherId, extensionId, token)
+  const submittedState = status.submittedItemRevisionStatus?.state
+  if (FAILED_REVIEW_STATES.has(submittedState) || status.takenDown) {
+    throw new Error("Review failed; see the developer dashboard for the reason")
+  }
+}
+
 async function main() {
-  const zipPath = process.argv[2]
-  if (!zipPath)
-    throw new Error("Usage: publish-chrome-webstore.mjs <chrome-zip>")
+  const arg = process.argv[2]
+  if (!arg)
+    throw new Error(
+      "Usage: publish-chrome-webstore.mjs <chrome-zip> | --status",
+    )
 
   const serviceAccount = JSON.parse(requireEnv("CHROME_SERVICE_ACCOUNT_JSON"))
   const extensionId = requireEnv("CHROME_EXTENSION_ID")
-  const skipReview = process.env.CHROME_SKIP_SUBMIT_REVIEW === "true"
-
   const token = await getAccessToken(serviceAccount)
+
+  if (arg === "--status") return checkStatus(extensionId, token)
+  return publish(arg, extensionId, token)
+}
+
+async function publish(zipPath, extensionId, token) {
+  const skipReview = process.env.CHROME_SKIP_SUBMIT_REVIEW === "true"
   const zip = await readFile(zipPath)
 
   console.log(
@@ -158,6 +207,17 @@ async function main() {
   console.log(`Publish status: ${statuses.join(", ")}`)
   if (!statuses.some((status) => PUBLISH_OK_STATUSES.has(status))) {
     throw new Error(`Publish rejected: ${JSON.stringify(result)}`)
+  }
+
+  // Informational only: the submission already succeeded.
+  const publisherId = process.env.CHROME_PUBLISHER_ID
+  if (!publisherId) return
+  try {
+    await fetchReviewStatus(publisherId, extensionId, token)
+  } catch (error) {
+    console.warn(
+      `Could not read review status: ${error instanceof Error ? error.message : error}`,
+    )
   }
 }
 
