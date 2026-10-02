@@ -54,6 +54,7 @@ export async function initializeServices() {
         modelSyncScheduler.initialize(),
         autoCheckinScheduler.initialize(),
         dailyBalanceHistoryScheduler.initialize(),
+        autoRefreshService.initialize(),
       ])
 
       await initBackgroundI18n().catch((error) => {
@@ -75,7 +76,6 @@ export async function initializeServices() {
         logger.warn("Model metadata initialization failed", error)
       })
 
-      await autoRefreshService.initialize()
       await redemptionAssistService.initialize()
 
       servicesInitialized = true
