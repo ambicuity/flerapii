@@ -25,6 +25,25 @@ const handleActionClick = async () => {
 }
 
 /**
+ * Register the side-panel click handler synchronously at service-worker startup.
+ *
+ * In "sidepanel" mode the popup is cleared, so a toolbar click that wakes an idle
+ * MV3 worker is dispatched as `action.onClicked` before `applyActionClickBehavior`
+ * (which awaits service init + preferences) has run. Registering here guarantees
+ * that click is handled. In "popup" mode `onClicked` never fires while a popup is
+ * set, so this registration is inert until `applyActionClickBehavior` reconciles it.
+ */
+export function registerActionClickListenerEarly(): void {
+  try {
+    addActionClickListener(handleActionClick)
+  } catch (error) {
+    logger.warn(
+      `Failed to register early action click listener:\n${getErrorMessage(error)}`,
+    )
+  }
+}
+
+/**
  * Apply toolbar click behavior at runtime.
  * - "popup": restores the popup.html UI and removes side-panel click listeners.
  * - "sidepanel": disables the popup so onClicked fires and opens the shared

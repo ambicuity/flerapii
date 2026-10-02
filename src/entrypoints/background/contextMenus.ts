@@ -123,6 +123,10 @@ export async function refreshContextMenus(preferences: UserPreferences) {
  * will bypass whitelist and code-format filters.
  */
 export async function setupContextMenus() {
+  // Must run synchronously during service-worker startup: a menu click that wakes
+  // the worker is dispatched before any awaited work resolves and would be dropped.
+  ensureContextMenuClickListener()
+
   try {
     const preferences = await userPreferences.getPreferences()
     await refreshContextMenus(preferences)

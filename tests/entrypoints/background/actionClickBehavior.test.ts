@@ -113,4 +113,39 @@ describe("background applyActionClickBehavior", () => {
 
     expect(openSidePanelWithFallback).toHaveBeenCalledTimes(1)
   })
+
+  it("registers the side-panel click handler synchronously for early startup", async () => {
+    getSidePanelSupport.mockReturnValue({
+      supported: true,
+      kind: "chromium-side-panel",
+    })
+
+    const { applyActionClickBehavior, registerActionClickListenerEarly } =
+      await import("~/entrypoints/background/actionClickBehavior")
+
+    registerActionClickListenerEarly()
+
+    expect(addActionClickListener).toHaveBeenCalledTimes(1)
+    const earlyHandler = addActionClickListener.mock.calls[0]?.[0]
+
+    await earlyHandler?.()
+    expect(openSidePanelWithFallback).toHaveBeenCalledTimes(1)
+
+    // The later preference-driven wiring must reuse the same handler so it can
+    // remove/dedupe the early registration.
+    await applyActionClickBehavior("sidepanel")
+    expect(addActionClickListener.mock.calls[1]?.[0]).toBe(earlyHandler)
+    expect(removeActionClickListener.mock.calls[0]?.[0]).toBe(earlyHandler)
+  })
+
+  it("does not throw when the action API is unavailable during early registration", async () => {
+    addActionClickListener.mockImplementationOnce(() => {
+      throw new Error("Action API is not available in this environment")
+    })
+
+    const { registerActionClickListenerEarly } =
+      await import("~/entrypoints/background/actionClickBehavior")
+
+    expect(() => registerActionClickListenerEarly()).not.toThrow()
+  })
 })

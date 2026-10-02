@@ -53,9 +53,8 @@ describe("background context menu refresh", () => {
   })
 
   it("creates both context menu entries by default", async () => {
-    const { refreshContextMenus } = await import(
-      "~/entrypoints/background/contextMenus"
-    )
+    const { refreshContextMenus } =
+      await import("~/entrypoints/background/contextMenus")
 
     await refreshContextMenus({
       redemptionAssist: { enabled: true, contextMenu: { enabled: true } },
@@ -71,9 +70,8 @@ describe("background context menu refresh", () => {
   })
 
   it("skips AI API Check menu creation when visibility is disabled", async () => {
-    const { refreshContextMenus } = await import(
-      "~/entrypoints/background/contextMenus"
-    )
+    const { refreshContextMenus } =
+      await import("~/entrypoints/background/contextMenus")
 
     await refreshContextMenus({
       redemptionAssist: { enabled: true, contextMenu: { enabled: true } },
@@ -88,10 +86,23 @@ describe("background context menu refresh", () => {
     )
   })
 
-  it("keeps click handling idempotent across multiple refreshes", async () => {
-    const { refreshContextMenus } = await import(
-      "~/entrypoints/background/contextMenus"
+  it("installs the click listener synchronously before awaiting preferences", async () => {
+    const { userPreferences } =
+      await import("~/services/preferences/userPreferences")
+    vi.mocked(userPreferences.getPreferences).mockReturnValue(
+      new Promise(() => {}) as any,
     )
+    const { setupContextMenus } =
+      await import("~/entrypoints/background/contextMenus")
+
+    void setupContextMenus()
+
+    expect(contextMenusAddListener).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps click handling idempotent across multiple refreshes", async () => {
+    const { refreshContextMenus } =
+      await import("~/entrypoints/background/contextMenus")
 
     const preferences = {
       redemptionAssist: { enabled: true, contextMenu: { enabled: true } },

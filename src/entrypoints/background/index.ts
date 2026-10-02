@@ -18,7 +18,10 @@ import { getManifest, onInstalled, onStartup } from "~/utils/browser/browserApi"
 import { createLogger } from "~/utils/core/logger"
 import { openOrFocusOptionsMenuItem } from "~/utils/navigation"
 
-import { applyActionClickBehavior } from "./actionClickBehavior"
+import {
+  applyActionClickBehavior,
+  registerActionClickListenerEarly,
+} from "./actionClickBehavior"
 import { setupContextMenus } from "./contextMenus"
 import {
   initializeCookieInterceptors,
@@ -45,6 +48,7 @@ export default defineBackground(() => {
   setupTempWindowListeners()
   setupCookieInterceptorListeners()
   setupContextMenus()
+  registerActionClickListenerEarly()
 
   /**
    * /
