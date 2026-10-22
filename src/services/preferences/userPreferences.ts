@@ -870,9 +870,12 @@ class UserPreferencesService {
   }
 
   async resetSortingPriorityConfig(): Promise<boolean> {
-    const prefs = await this.getPreferences()
-    const { sortingPriorityConfig: _sortingPriorityConfig, ...rest } = prefs
-    return this.savePreferences(rest as any)
+    // The default config must be written explicitly: `savePreferences` deep
+    // merges, so omitting the key cannot delete the stored configuration.
+    return this.setSortingPriorityConfig({
+      ...DEFAULT_SORTING_PRIORITY_CONFIG,
+      criteria: DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => ({ ...c })),
+    })
   }
 
   /**
