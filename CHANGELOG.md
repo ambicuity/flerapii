@@ -15,6 +15,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Revamped documentation website with dark minimal design
 - Generated new Flerapii logo
 
+## [1.1.0] - 2026-10-22
+
+### Fixed
+- Temporary-window cookie rules are now installed with a rule id that is unique per request instead of per tab. Concurrent requests to the same origin no longer overwrite or delete each other's injected `Cookie` header, so one account's session can no longer be sent with another account's request.
+- In-use temporary-window contexts are tracked per request. A context that is still serving a request is no longer handed to a second request, and releasing one request no longer tears the tab down while another request is still running.
+- Temporary windows and tabs are now removed as the resource kind they actually are. Passing a tab id to the window-removal API could close an unrelated browser window, because Chrome allocates window and tab ids from separate counters.
+- The OneHub/DoneHub token listing now understands the `{ items }` response envelope as well as a bare array and `{ data }`. The previously unhandled shape returned an empty key list without an error, which also made key auto-provisioning create duplicate keys.
+- Importing a backup that is not version 2.0 no longer silently drops API credential profiles, bookmarks or the pinned/ordered account ids, and the import result now accounts for every requested section instead of reporting a complete success.
+- A malformed `sortingPriorityConfig` no longer makes the settings read fail. A failed read now falls back to the stored preferences instead of the defaults, so a later save can no longer replace real settings (including the WebDAV password) with default values.
+- Resetting the account sorting priority now actually persists the default order. Preferences are deep-merged, so the previous reset wrote the old custom order straight back.
+- Account schema migrations now run as a read-modify-write inside the storage write lock. A background migration can no longer delete an account that was added concurrently from another extension context.
+- The dashboard's "today's consumption" USD and CNY totals are now derived from the same account set. Disabling an account previously lowered the USD figure but not the CNY one, so the two currencies of the same metric disagreed.
+- A failed read of the account store is no longer reported as a successful daily auto check-in. The run now fails visibly, the day is not marked as already checked in, and the day's check-in is not silently lost.
+
 ## [1.0.3] - 2026-07-11
 
 ### Fixed
