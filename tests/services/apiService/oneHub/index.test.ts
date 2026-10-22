@@ -137,6 +137,26 @@ describe("OneHub API service", () => {
     expect(result).toEqual(tokens)
   })
 
+  it("fetchAccountTokens should return items when response uses the items envelope", async () => {
+    const tokens = [{ id: 1 }, { id: 2 }]
+    mockedFetchApiData.mockResolvedValueOnce({ items: tokens, total: 2 })
+
+    const result = await fetchAccountTokens(baseRequest as any)
+
+    expect(result).toEqual(tokens)
+  })
+
+  it("fetchAccountTokens should normalize token.key with sk- prefix for the items envelope", async () => {
+    mockedFetchApiData.mockResolvedValueOnce({
+      items: [{ id: 1, key: "plain" }],
+      total: 1,
+    })
+
+    const result = await fetchAccountTokens(baseRequest as any)
+
+    expect(result.map((token: any) => token.key)).toEqual(["sk-plain"])
+  })
+
   it("fetchAccountTokens should return empty array for unexpected format", async () => {
     mockedFetchApiData.mockResolvedValueOnce({ foo: "bar" })
 

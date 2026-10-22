@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi, type Mock } from "vitest"
 
 import { RuntimeActionIds } from "~/constants/runtimeActions"
 import { accountStorage } from "~/services/accounts/accountStorage"
@@ -48,6 +48,7 @@ vi.mock("~/services/preferences/userPreferences", () => ({
 vi.mock("~/services/accounts/accountStorage", () => ({
   accountStorage: {
     getAllAccounts: vi.fn(),
+    getAllAccountsWithStatus: vi.fn(),
     getEnabledAccounts: vi.fn(),
     updateAccount: vi.fn(),
     markAccountAsSiteCheckedIn: vi.fn(),
@@ -98,7 +99,10 @@ const mockedAutoCheckinStorage = autoCheckinStorage as unknown as {
 
 const mockedAccountStorage = accountStorage as unknown as {
   getAccountById: ReturnType<typeof vi.fn>
-  getAllAccounts: ReturnType<typeof vi.fn>
+  getAllAccounts: Mock<() => Promise<any[]>>
+  getAllAccountsWithStatus: Mock<
+    () => Promise<{ accounts: any[]; readable: boolean }>
+  >
   markAccountAsSiteCheckedIn: ReturnType<typeof vi.fn>
   refreshAccount: ReturnType<typeof vi.fn>
 }
@@ -125,6 +129,15 @@ beforeEach(() => {
 
   mockedAutoCheckinStorage.getStatus.mockImplementation(
     async () => storedStatus,
+  )
+
+  // Default to a readable account store; individual tests can override this to
+  // simulate an unreadable store.
+  mockedAccountStorage.getAllAccountsWithStatus.mockImplementation(
+    async () => ({
+      accounts: await mockedAccountStorage.getAllAccounts(),
+      readable: true,
+    }),
   )
   mockedAutoCheckinStorage.saveStatus.mockImplementation(
     async (status: any) => {

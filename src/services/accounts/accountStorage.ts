@@ -125,28 +125,84 @@ class AccountStorageService {
    * Get all accounts (migrates legacy configs if needed).
    */
   async getAllAccounts(): Promise<SiteAccount[]> {
+    const { accounts } = await this.getAllAccountsWithStatus()
+    return accounts
+  }
+
+  /**
+   * Get all accounts together with a flag that tells whether the store could be
+   * read.
+   *
+   * {@link getAllAccounts} degrades to an empty list when the store cannot be
+   * read, which is indistinguishable from "no accounts are configured".
+   * Callers that must tell those apart (for example the auto check-in
+   * scheduler) use this method instead.
+   */
+  async getAllAccountsWithStatus(): Promise<{
+    accounts: SiteAccount[]
+    readable: boolean
+  }> {
     try {
       // Ensure tag data is migrated on reads so downstream consumers always see
       // `tagIds` and a consistent global tag store.
       await ensureAccountTagsStorageMigrated(this.storage)
 
-      const config = await this.getStorageConfigOrDefault()
-      const { accounts, migratedCount } = migrateAccountsConfig(config.accounts)
-      const normalizedAccounts = accounts.map(normalizeSiteAccount)
+      const config = await this.getStorageConfig()
+      const { migratedCount } = migrateAccountsConfig(config.accounts)
 
-      if (migratedCount > 0) {
-        // If any account schemas were upgraded, persist the normalized set immediately
-        logger.info("Accounts migrated; persisting updated accounts", {
-          migratedCount,
-        })
-        await this.saveAccounts(normalizedAccounts)
+      if (migratedCount === 0) {
+        return {
+          accounts: config.accounts.map(normalizeSiteAccount),
+          readable: true,
+        }
       }
 
-      return normalizedAccounts
+      // If any account schemas were upgraded, persist the normalized set
+      // immediately. The migration is re-run under the storage lock so the
+      // persisted list is derived from the locked state: writing the snapshot
+      // read above could drop an account that was added concurrently.
+      logger.info("Accounts migrated; persisting updated accounts", {
+        migratedCount,
+      })
+      return {
+        accounts: await this.migrateAndSaveAccounts(),
+        readable: true,
+      }
     } catch (error) {
       logger.error("", error)
-      return []
+      return { accounts: [], readable: false }
     }
+  }
+
+  /**
+   * Migrate the stored accounts and persist them while holding the storage
+   * write lock.
+   *
+   * The account list is read inside the lock, so the persisted list is derived
+   * from the locked state: writing the snapshot that was read earlier could
+   * drop an account that another extension context added concurrently.
+   */
+  private async migrateAndSaveAccounts(): Promise<SiteAccount[]> {
+    return await this.mutateStorageConfig((config) => {
+      const { accounts } = migrateAccountsConfig(config.accounts)
+      const normalizedAccounts = accounts.map(normalizeSiteAccount)
+
+      const { entryIds } = AccountStorageService.buildEntryIdSets({
+        accounts: normalizedAccounts,
+        bookmarks: config.bookmarks,
+      })
+
+      config.accounts = normalizedAccounts
+      config.pinnedAccountIds = config.pinnedAccountIds.filter((id) =>
+        entryIds.has(id),
+      )
+      config.orderedAccountIds = config.orderedAccountIds.filter((id) =>
+        entryIds.has(id),
+      )
+
+      logger.debug("", { accountCount: normalizedAccounts.length })
+      return { result: normalizedAccounts, changed: true }
+    })
   }
 
   /**
@@ -1314,40 +1370,6 @@ class AccountStorageService {
       logger.error("", error)
       return createDefaultAccountStorageConfig()
     }
-  }
-
-  /**
-   * Save the full account list while also pruning stale pinned/ordered ids.
-   *
-   * This keeps derived collections in sync so the UI never references missing
-   * accounts after deletions or imports.
-   */
-  private async saveAccounts(accounts: SiteAccount[]): Promise<void> {
-    logger.debug("", { accountCount: accounts.length })
-    await this.mutateStorageConfig((existingConfig) => {
-      const { entryIds } = AccountStorageService.buildEntryIdSets({
-        accounts,
-        bookmarks: existingConfig.bookmarks,
-      })
-      const filteredPinnedIds = existingConfig.pinnedAccountIds.filter((id) =>
-        entryIds.has(id),
-      )
-      const filteredOrderedIds = existingConfig.orderedAccountIds.filter((id) =>
-        entryIds.has(id),
-      )
-      existingConfig.accounts = accounts
-      existingConfig.pinnedAccountIds = filteredPinnedIds
-      existingConfig.orderedAccountIds = filteredOrderedIds
-
-      logger.debug("", {
-        accountCount: accounts.length,
-        pinnedCount: filteredPinnedIds.length,
-        orderedCount: filteredOrderedIds.length,
-        storageKey: ACCOUNT_STORAGE_KEYS.ACCOUNTS,
-      })
-      return { result: undefined, changed: true }
-    })
-    logger.debug("")
   }
 
   /**

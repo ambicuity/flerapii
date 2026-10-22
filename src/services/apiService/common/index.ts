@@ -791,6 +791,32 @@ export async function validateAccountConnection(
 }
 
 /**
+ * Extract the token list from the response payload.
+ *
+ * Relays answer with different envelopes depending on the backend flavour: a
+ * bare array, a `{ items: [...] }` pagination envelope, or a `{ data: [...] }`
+ * wrapper. All of them must be supported, otherwise the key list silently comes
+ * back empty.
+ */
+const extractTokenList = (payload: unknown): ApiToken[] | null => {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>
+    if (Array.isArray(record.items)) {
+      return record.items
+    }
+    if (Array.isArray(record.data)) {
+      return record.data
+    }
+  }
+
+  return null
+}
+
+/**
  * Fetch the API token list for a user and normalize multiple response shapes.
  *
  * Some upstreams return a simple array, while others wrap the data in a
@@ -821,34 +847,22 @@ export async function fetchAccountTokens(
     )
 
     //
-    if (Array.isArray(tokensData)) {
-      //
-      const normalizedTokens = tokensData.map(normalizeApiTokenKey)
+    const tokenList = extractTokenList(tokensData)
+    if (tokenList) {
+      const normalizedTokens = tokenList.map(normalizeApiTokenKey)
       syncResolvedApiTokenKeyCache(request, normalizedTokens)
       return normalizedTokens
-    } else if (
-      tokensData &&
-      typeof tokensData === "object" &&
-      "items" in tokensData
-    ) {
-      //  items
-      const normalizedTokens = (tokensData.items || []).map(
-        normalizeApiTokenKey,
-      )
-      syncResolvedApiTokenKeyCache(request, normalizedTokens)
-      return normalizedTokens
-    } else {
-      //
-      syncResolvedApiTokenKeyCache(request, [])
-      logger.warn("Unexpected token response format", {
-        receivedType: Array.isArray(tokensData) ? "array" : typeof tokensData,
-        keys:
-          tokensData && typeof tokensData === "object"
-            ? Object.keys(tokensData as any)
-            : null,
-      })
-      return []
     }
+
+    syncResolvedApiTokenKeyCache(request, [])
+    logger.warn("Unexpected token response format", {
+      receivedType: Array.isArray(tokensData) ? "array" : typeof tokensData,
+      keys:
+        tokensData && typeof tokensData === "object"
+          ? Object.keys(tokensData as any)
+          : null,
+    })
+    return []
   } catch (error) {
     logger.error("", error)
     throw error

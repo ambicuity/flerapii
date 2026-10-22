@@ -85,6 +85,24 @@ describe("apiService common token APIs", () => {
     expect(result.map((token: any) => token.key)).toEqual(["sk-plain"])
   })
 
+  it("fetchAccountTokens normalizes token.key with sk- prefix (data envelope response)", async () => {
+    mockedFetchApiData.mockResolvedValueOnce({
+      data: [{ id: 1, key: "plain" }],
+    })
+
+    const request = {
+      baseUrl: "https://example.com",
+      auth: {
+        authType: AuthTypeEnum.AccessToken,
+        userId: 1,
+        accessToken: "token",
+      },
+    }
+
+    const result = await fetchAccountTokens(request as any)
+    expect(result.map((token: any) => token.key)).toEqual(["sk-plain"])
+  })
+
   it("fetchTokenById normalizes token.key with sk- prefix", async () => {
     mockedFetchApiData.mockResolvedValueOnce({ id: 99, key: "abc" })
 

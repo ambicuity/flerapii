@@ -191,6 +191,92 @@ export function parseBackupSummary(
 }
 
 /**
+ * Resolve the accounts payload of a backup into its config shape.
+ *
+ * Legacy payloads nest the account list under `data.accounts` or
+ * `data.data.accounts`. Some of them carry a full storage config object
+ * (accounts + bookmarks + pin/order ids) instead of a bare array, so the
+ * companion collections must be preserved as well.
+ */
+function resolveAccountsConfig(raw: RawBackupData): {
+  accounts: any[]
+  bookmarks?: any[]
+  pinnedAccountIds?: string[]
+  orderedAccountIds?: string[]
+} {
+  const candidates = [(raw as any).accounts, (raw.data as any)?.accounts]
+
+  for (const candidate of candidates) {
+    if (Array.isArray(candidate)) {
+      return { accounts: candidate }
+    }
+
+    if (
+      candidate &&
+      typeof candidate === "object" &&
+      Array.isArray(candidate.accounts)
+    ) {
+      return {
+        accounts: candidate.accounts,
+        bookmarks: Array.isArray(candidate.bookmarks)
+          ? candidate.bookmarks
+          : undefined,
+        pinnedAccountIds: Array.isArray(candidate.pinnedAccountIds)
+          ? candidate.pinnedAccountIds
+          : undefined,
+        orderedAccountIds: Array.isArray(candidate.orderedAccountIds)
+          ? candidate.orderedAccountIds
+          : undefined,
+      }
+    }
+  }
+
+  return { accounts: [] }
+}
+
+/**
+ * Import the API credential profiles section of a backup payload.
+ *
+ * When the payload carries a tag store but no accounts, the tag store is merged
+ * first so that credential-profile tag references can resolve.
+ * @returns true when the section was imported.
+ */
+async function importApiCredentialProfilesSection(params: {
+  raw: unknown
+  hasAccounts: boolean
+  tagStore?: TagStore
+}): Promise<boolean> {
+  if (!params.raw) {
+    return false
+  }
+
+  const incoming = coerceApiCredentialProfilesConfig(params.raw)
+
+  if (!params.hasAccounts && params.tagStore) {
+    const tagMerge = tagStorage.mergeTagStoresForSync({
+      localTagStore: await tagStorage.exportTagStore(),
+      remoteTagStore: params.tagStore,
+      localAccounts: [],
+      remoteAccounts: [],
+      localBookmarks: [],
+      remoteBookmarks: [],
+      localTaggables: [],
+      remoteTaggables: incoming.profiles,
+    })
+
+    await tagStorage.importTagStore(tagMerge.tagStore)
+    await apiCredentialProfilesStorage.mergeConfig({
+      ...incoming,
+      profiles: tagMerge.remoteTaggables,
+    })
+    return true
+  }
+
+  await apiCredentialProfilesStorage.mergeConfig(incoming)
+  return true
+}
+
+/**
  * Handles legacy (V1) backup payloads by importing accounts/preferences/channel configs when present.
  */
 async function importV1Backup(
@@ -200,6 +286,7 @@ async function importV1Backup(
   let accountsImported = false
   let preferencesImported = false
   let channelConfigsImported = false
+  let apiCredentialProfilesImported = false
 
   const accountsRequested = Boolean(data.accounts || data.type === "accounts")
   const preferencesRequested = Boolean(
@@ -207,6 +294,9 @@ async function importV1Backup(
   )
   const channelConfigsRequested = Boolean(
     data.channelConfigs || data.type === "channelConfigs",
+  )
+  const apiCredentialProfilesRequested = Boolean(
+    (data as any).apiCredentialProfiles,
   )
 
   // accounts: support both legacy partial exports and older full exports
@@ -216,14 +306,22 @@ async function importV1Backup(
       await tagStorage.importTagStore(rawTagStore)
     }
 
-    const accountsData =
-      (data.accounts as any)?.accounts ??
-      (data.data as any)?.accounts ??
-      data.accounts
+    const accountsConfig = resolveAccountsConfig(data)
 
-    if (accountsData) {
+    if (accountsConfig.accounts.length > 0) {
       await accountStorage.importData({
-        accounts: accountsData,
+        accounts: accountsConfig.accounts,
+        // Preserve the companion collections when the payload carries a full
+        // storage config object instead of a bare account array.
+        ...(accountsConfig.bookmarks
+          ? { bookmarks: accountsConfig.bookmarks }
+          : {}),
+        ...(accountsConfig.pinnedAccountIds
+          ? { pinnedAccountIds: accountsConfig.pinnedAccountIds }
+          : {}),
+        ...(accountsConfig.orderedAccountIds
+          ? { orderedAccountIds: accountsConfig.orderedAccountIds }
+          : {}),
       })
       // Ensure legacy imports (string tags) are migrated to tag ids.
       await tagStorage.ensureLegacyMigration()
@@ -257,8 +355,20 @@ async function importV1Backup(
     }
   }
 
+  // api credential profiles: best-effort support if present in the payload
+  if (apiCredentialProfilesRequested) {
+    apiCredentialProfilesImported = await importApiCredentialProfilesSection({
+      raw: (data as any).apiCredentialProfiles,
+      hasAccounts: accountsImported,
+      tagStore: (data as any).tagStore ?? (data.data as any)?.tagStore,
+    })
+  }
+
   const anyImported =
-    accountsImported || preferencesImported || channelConfigsImported
+    accountsImported ||
+    preferencesImported ||
+    channelConfigsImported ||
+    apiCredentialProfilesImported
 
   if (!anyImported) {
     throw new ImportExportError("NO_IMPORTABLE_DATA")
@@ -267,7 +377,8 @@ async function importV1Backup(
   const allImported =
     (!accountsRequested || accountsImported) &&
     (!preferencesRequested || preferencesImported) &&
-    (!channelConfigsRequested || channelConfigsImported)
+    (!channelConfigsRequested || channelConfigsImported) &&
+    (!apiCredentialProfilesRequested || apiCredentialProfilesImported)
 
   return {
     allImported,
@@ -275,7 +386,7 @@ async function importV1Backup(
       accounts: accountsImported,
       preferences: preferencesImported,
       channelConfigs: channelConfigsImported,
-      apiCredentialProfiles: false,
+      apiCredentialProfiles: apiCredentialProfilesImported,
     },
   }
 }
@@ -541,36 +652,11 @@ async function importV2Backup(
   }
 
   if (apiCredentialProfilesRequested) {
-    const incoming = coerceApiCredentialProfilesConfig(
-      (data as BackupFullV2).apiCredentialProfiles,
-    )
-
-    if (
-      !accountsRequested &&
-      "tagStore" in (data as any) &&
-      (data as any).tagStore
-    ) {
-      const tagMerge = tagStorage.mergeTagStoresForSync({
-        localTagStore: await tagStorage.exportTagStore(),
-        remoteTagStore: (data as any).tagStore,
-        localAccounts: [],
-        remoteAccounts: [],
-        localBookmarks: [],
-        remoteBookmarks: [],
-        localTaggables: [],
-        remoteTaggables: incoming.profiles,
-      })
-
-      await tagStorage.importTagStore(tagMerge.tagStore)
-
-      await apiCredentialProfilesStorage.mergeConfig({
-        ...incoming,
-        profiles: tagMerge.remoteTaggables,
-      })
-    } else {
-      await apiCredentialProfilesStorage.mergeConfig(incoming)
-    }
-    apiCredentialProfilesImported = true
+    apiCredentialProfilesImported = await importApiCredentialProfilesSection({
+      raw: (data as BackupFullV2).apiCredentialProfiles,
+      hasAccounts: accountsImported,
+      tagStore: (data as any).tagStore,
+    })
   }
 
   const anyImported =

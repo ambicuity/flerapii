@@ -77,8 +77,8 @@ export default function AccountBalanceSummary() {
     useUserPreferencesContext()
 
   const totalConsumption = useMemo(
-    () => calculateTotalConsumption(stats, accounts),
-    [stats, accounts],
+    () => calculateTotalConsumption(accounts),
+    [accounts],
   )
 
   const totalBalance = useMemo(

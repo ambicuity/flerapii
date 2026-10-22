@@ -54,6 +54,32 @@ export const fetchModelPricing = async (
 }
 
 /**
+ * Extract the token list from the response payload.
+ *
+ * OneHub/DoneHub relays answer with different envelopes depending on the
+ * backend flavour: a bare array, a `{ data: [...] }` wrapper, or the
+ * New-API-compatible `{ items: [...] }` pagination envelope. All of them must
+ * be supported, otherwise the key list silently comes back empty.
+ */
+const extractTokenList = (payload: unknown): ApiToken[] | null => {
+  if (Array.isArray(payload)) {
+    return payload
+  }
+
+  if (payload && typeof payload === "object") {
+    const record = payload as Record<string, unknown>
+    if (Array.isArray(record.items)) {
+      return record.items
+    }
+    if (Array.isArray(record.data)) {
+      return record.data
+    }
+  }
+
+  return null
+}
+
+/**
  *
  */
 export const fetchAccountTokens = async (
@@ -73,23 +99,15 @@ export const fetchAccountTokens = async (
     })
 
     //
-    if (Array.isArray(tokensData)) {
-      //
-      return tokensData.map(normalizeApiTokenKey)
-    } else if (
-      tokensData &&
-      typeof tokensData === "object" &&
-      "data" in tokensData
-    ) {
-      //  data
-      return (tokensData.data || []).map(normalizeApiTokenKey)
-    } else {
-      //
-      logger.warn("Unexpected token response format", {
-        responseType: tokensData === null ? "null" : typeof tokensData,
-      })
-      return []
+    const tokenList = extractTokenList(tokensData)
+    if (tokenList) {
+      return tokenList.map(normalizeApiTokenKey)
     }
+
+    logger.warn("Unexpected token response format", {
+      responseType: tokensData === null ? "null" : typeof tokensData,
+    })
+    return []
   } catch (error) {
     logger.error("", error)
     throw error

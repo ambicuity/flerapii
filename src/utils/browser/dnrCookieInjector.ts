@@ -20,10 +20,40 @@ const logger = createLogger("DnrCookieInjector")
 
 export const TEMP_WINDOW_DNR_RULE_ID_BASE = 1_000_000 as const
 
+/**
+ * Size of the per-install rule-id sequence.
+ *
+ * Rule ids must be unique among the currently installed session rules, so ids
+ * are allocated from a monotonic counter instead of being derived from the tab.
+ */
+const TEMP_WINDOW_DNR_RULE_ID_SEQUENCE_RANGE = 1_000_000
+
+let ruleIdSequence = 0
+
+/**
+ * Allocate a rule id that is unique among all currently installed rules.
+ *
+ * Deriving the id from the tab alone would make it a single mutable slot
+ * shared by every in-flight request that uses that tab: concurrent requests
+ * would overwrite each other's Cookie override, and the first request to finish
+ * would delete the rule while the others are still running.
+ */
+function allocateRuleId(): number {
+  ruleIdSequence = (ruleIdSequence + 1) % TEMP_WINDOW_DNR_RULE_ID_SEQUENCE_RANGE
+  return TEMP_WINDOW_DNR_RULE_ID_BASE + ruleIdSequence
+}
+
 export interface TempWindowCookieRuleParams {
   tabId: number
   url: string
   cookieHeader: string
+  /**
+   * Unique id of the rule being installed.
+   *
+   * Callers must not derive this from the tab id; use
+   * {@link applyTempWindowCookieRule} so the id is allocated uniquely.
+   */
+  ruleId: number
 }
 
 /**
@@ -40,19 +70,11 @@ function hasDnrApi(): boolean {
 }
 
 /**
- * Builds a stable rule ID for a given tab.
- */
-function buildRuleId(tabId: number): number {
-  const safeTabId = Number.isFinite(tabId) ? Math.max(0, Math.floor(tabId)) : 0
-  return TEMP_WINDOW_DNR_RULE_ID_BASE + safeTabId
-}
-
-/**
  * Build a session-scoped DNR rule that forces the Cookie header for a specific
  * tab and URL.
  */
 export function buildTempWindowCookieRule(params: TempWindowCookieRuleParams) {
-  const ruleId = buildRuleId(params.tabId)
+  const ruleId = params.ruleId
 
   return {
     id: ruleId,
@@ -75,11 +97,15 @@ export function buildTempWindowCookieRule(params: TempWindowCookieRuleParams) {
 }
 
 /**
- * Installs (or replaces) a temp-window Cookie override rule for the given tab.
- * Returns the installed ruleId, or null when rule install is not possible.
+ * Installs a temp-window Cookie override rule for the given tab.
+ *
+ * Each installation receives its own rule id, so concurrent requests that share
+ * a tab cannot overwrite or delete each other's override. The returned id must
+ * be handed to {@link removeTempWindowCookieRule} once the request completes.
+ * @returns The installed ruleId, or null when rule install is not possible.
  */
 export async function applyTempWindowCookieRule(
-  params: TempWindowCookieRuleParams,
+  params: Omit<TempWindowCookieRuleParams, "ruleId">,
 ): Promise<number | null> {
   if (!params.cookieHeader) {
     return null
@@ -89,10 +115,10 @@ export async function applyTempWindowCookieRule(
     return null
   }
 
-  const ruleId = buildRuleId(params.tabId)
-  const rule = buildTempWindowCookieRule(params)
+  const ruleId = allocateRuleId()
 
   try {
+    const rule = buildTempWindowCookieRule({ ...params, ruleId })
     await (globalThis as any).chrome.declarativeNetRequest.updateSessionRules({
       removeRuleIds: [ruleId],
       addRules: [rule],

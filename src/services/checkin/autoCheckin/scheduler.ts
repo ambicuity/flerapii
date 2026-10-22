@@ -1731,7 +1731,49 @@ class AutoCheckinScheduler {
       // Get all accounts, then exclude disabled accounts from runnable selection.
       // Disabled accounts must not participate, but we still record an explicit
       // skip reason so background status/history can explain why an account was skipped.
-      const availableAccounts = await accountStorage.getAllAccounts()
+      const { accounts: availableAccounts, readable: accountsReadable } =
+        await accountStorage.getAllAccountsWithStatus()
+
+      if (!accountsReadable) {
+        // The account store could not be read. That is not the same as "there
+        // are no accounts": reporting success would stamp the day as done and
+        // silently drop the day's check-in, so the failure is surfaced instead.
+        logger.error("Failed to read accounts; aborting check-in run")
+
+        await autoCheckinStorage.saveStatus({
+          ...(currentStatus ?? {}),
+          lastRunAt: new Date().toISOString(),
+          lastRunResult: AUTO_CHECKIN_RUN_RESULT.FAILED,
+          // Keep the previous per-account history: the accounts could not be
+          // read, so there is nothing new to report.
+          perAccount: currentStatus?.perAccount ?? {},
+          summary: {
+            totalEligible: 0,
+            executed: 0,
+            successCount: 0,
+            failedCount: 0,
+            skippedCount: 0,
+            needsRetry: false,
+          },
+        })
+
+        if (notifyUiOnCompletion) {
+          await this.notifyUiRunCompleted({
+            runKind: runType,
+            updatedAccountIds: [],
+            summary: {
+              totalEligible: 0,
+              executed: 0,
+              successCount: 0,
+              failedCount: 0,
+              skippedCount: 0,
+              needsRetry: false,
+            },
+          })
+        }
+        return
+      }
+
       const accountDisplayNameById =
         buildAccountDisplayNameMap(availableAccounts)
       const allAccounts = targetAccountIdSet
@@ -1990,7 +2032,7 @@ class AutoCheckinScheduler {
         ...(currentStatus ?? {}),
         lastRunAt: new Date().toISOString(),
         lastRunResult: AUTO_CHECKIN_RUN_RESULT.FAILED,
-        perAccount: mergeHistory ? currentStatus?.perAccount ?? {} : {},
+        perAccount: mergeHistory ? (currentStatus?.perAccount ?? {}) : {},
         pendingRetry: false,
         retryState: isDailyRun ? undefined : currentStatus?.retryState,
         ...(isDailyRun
@@ -2090,7 +2132,7 @@ class AutoCheckinScheduler {
         updates[accountId] = {
           accountId,
           accountName: account
-            ? accountDisplayNameById.get(account.id) ?? account.id
+            ? (accountDisplayNameById.get(account.id) ?? account.id)
             : accountId,
           status: CHECKIN_RESULT_STATUS.SKIPPED,
           messageKey: this.getSkipReasonMessageKey(

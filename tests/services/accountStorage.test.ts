@@ -459,8 +459,9 @@ describe("accountStorage core behaviors", () => {
 
     expect(await accountStorage.getOrderedList()).toEqual(["a-2", "a-1"])
 
-    // When accounts change, saveAccounts should drop invalid ordered ids
-    await (accountStorage as any).saveAccounts(accounts.slice(0, 2))
+    // When the account set changes, ordered ids that no longer resolve are
+    // dropped while the remaining order is preserved.
+    await accountStorage.importData({ accounts: accounts.slice(0, 2) })
     expect(await accountStorage.getOrderedList()).toEqual(["a-2", "a-1"])
 
     // After deleting an account, ordered ids should be cleaned

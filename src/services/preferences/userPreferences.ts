@@ -600,8 +600,9 @@ class UserPreferencesService {
    * Get user preferences (with migration + defaults merged) without mutating storage.
    */
   async getPreferences(): Promise<UserPreferences> {
+    let storedPreferences: UserPreferences | undefined
     try {
-      const storedPreferences = (await this.storage.get(
+      storedPreferences = (await this.storage.get(
         USER_PREFERENCES_STORAGE_KEYS.USER_PREFERENCES,
       )) as UserPreferences | undefined
       const defaultPreferences = createReadOnlyDefaultPreferences()
@@ -612,7 +613,14 @@ class UserPreferencesService {
       return deepOverride(defaultPreferences, migratedPreferences)
     } catch (error) {
       logger.error("", error)
-      return createReadOnlyDefaultPreferences()
+      // Fall back to the stored record merged with the defaults rather than to
+      // the defaults alone: returning pure defaults here would let the next
+      // savePreferences() call replace the user's real settings (including
+      // their WebDAV credentials) with default values.
+      return deepOverride(
+        createReadOnlyDefaultPreferences(),
+        (storedPreferences ?? {}) as UserPreferences,
+      )
     }
   }
 
@@ -870,9 +878,12 @@ class UserPreferencesService {
   }
 
   async resetSortingPriorityConfig(): Promise<boolean> {
-    const prefs = await this.getPreferences()
-    const { sortingPriorityConfig: _sortingPriorityConfig, ...rest } = prefs
-    return this.savePreferences(rest as any)
+    // The default config must be written explicitly: `savePreferences` deep
+    // merges, so omitting the key cannot delete the stored configuration.
+    return this.setSortingPriorityConfig({
+      ...DEFAULT_SORTING_PRIORITY_CONFIG,
+      criteria: DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => ({ ...c })),
+    })
   }
 
   /**
