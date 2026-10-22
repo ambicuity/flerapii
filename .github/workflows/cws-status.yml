@@ -1,0 +1,40 @@
+name: Chrome Web Store Status
+
+# Manual only. Reports the Chrome Web Store review/publish state of the
+# extension without uploading or publishing anything.
+#
+# The status API needs the service-account key, which only exists as a repo
+# secret, so the check has to run in CI. `scripts/publish-chrome-webstore.mjs`
+# exits 1 when the submitted revision was rejected or the item was taken
+# down, which fails this workflow.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cws-status
+  cancel-in-progress: false
+
+jobs:
+  status:
+    name: CWS Review Status
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      # The status script only uses node:crypto and node:fs, so there is no
+      # dependency install step.
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+
+      - name: Show Chrome Web Store review status
+        run: node scripts/publish-chrome-webstore.mjs --status
+        env:
+          CHROME_SERVICE_ACCOUNT_JSON: ${{ secrets.CHROME_SERVICE_ACCOUNT_JSON }}
+          CHROME_EXTENSION_ID: ${{ secrets.CHROME_EXTENSION_ID }}
+          CHROME_PUBLISHER_ID: ${{ secrets.CHROME_PUBLISHER_ID }}
