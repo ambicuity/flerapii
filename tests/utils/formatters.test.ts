@@ -192,11 +192,7 @@ describe("formatters utilities", () => {
   })
 
   describe("calculateTotalConsumption", () => {
-    it("should calculate USD and CNY amounts from stats and accounts", () => {
-      const stats = {
-        today_total_consumption: 12345,
-      } as any
-
+    it("should calculate USD and CNY amounts from the same account set", () => {
       const accounts = [
         {
           account_info: {
@@ -212,7 +208,7 @@ describe("formatters utilities", () => {
         },
       ]
 
-      const result = calculateTotalConsumption(stats, accounts)
+      const result = calculateTotalConsumption(accounts)
 
       expect(result.USD).toBeGreaterThan(0)
       expect(result.CNY).toBeGreaterThan(0)

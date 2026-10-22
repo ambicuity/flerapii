@@ -3,7 +3,6 @@ import relativeTime from "dayjs/plugin/relativeTime"
 
 import { CURRENCY_SYMBOLS, UI_CONSTANTS } from "~/constants/ui"
 import type {
-  AccountStats,
   ApiToken,
   CurrencyType,
   DisplaySiteData,
@@ -170,18 +169,36 @@ export const formatFullTime = (date: Date | undefined): string => {
 }
 
 /**
+ * Sum the per-account consumption into the USD and CNY totals.
  *
+ * Both currencies are derived from the same account set, so the USD and CNY
+ * totals of the same metric always describe the same accounts. The account set
+ * matches the one used for the total balance: disabled and explicitly excluded
+ * accounts are left out.
  */
 export const calculateTotalConsumption = (
-  stats: AccountStats,
   accounts: any[],
-) => {
+): {
+  USD: number
+  CNY: number
+} => {
   // Null-safe: this runs inside account-loading paths, so a single account with
   // incomplete data must not throw and abort the whole load.
-  const usdAmount =
-    (stats?.today_total_consumption ?? 0) /
-    UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR
-  const cnyAmount = accounts.reduce(
+  const includedAccounts = (accounts ?? []).filter(
+    (account) =>
+      account?.disabled !== true &&
+      account?.excludeFromTotalBalance !== true,
+  )
+
+  const usdAmount = includedAccounts.reduce(
+    (sum, account) =>
+      sum +
+      ((account?.account_info?.today_quota_consumption ?? 0) /
+        UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR),
+    0,
+  )
+
+  const cnyAmount = includedAccounts.reduce(
     (sum, acc) =>
       sum +
       ((acc?.account_info?.today_quota_consumption ?? 0) /
@@ -225,7 +242,11 @@ export const calculateTotalBalanceForSites = (sites: DisplaySiteData[]) =>
  * @param sites Display-ready site collection containing `todayConsumption`.
  */
 export const calculateTotalConsumptionForSites = (sites: DisplaySiteData[]) => {
-  const enabledSites = sites.filter((site) => !site.disabled)
+  // Use the same inclusion rules as {@link calculateTotalBalance} so the
+  // filtered balance and the filtered consumption describe the same accounts.
+  const enabledSites = sites.filter(
+    (site) => !site.disabled && site.excludeFromTotalBalance !== true,
+  )
   const usd = enabledSites.reduce(
     (sum, site) => sum + site.todayConsumption.USD,
     0,

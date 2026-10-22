@@ -409,10 +409,7 @@ export const AccountDataProvider = ({
           CNY: site.balance?.CNY ?? 0,
         }
       })
-      const nextTotalConsumption = calculateTotalConsumption(
-        accountStats,
-        allAccounts,
-      )
+      const nextTotalConsumption = calculateTotalConsumption(allAccounts)
 
       if (!isInitialLoad) {
         // Expose the prior load's values as the animation start point.
