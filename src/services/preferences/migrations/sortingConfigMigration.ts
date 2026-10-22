@@ -13,13 +13,32 @@ import { createLogger } from "~/utils/core/logger"
 const logger = createLogger("SortingConfigMigration")
 
 /**
+ * Read the criteria list of a sorting config defensively.
+ *
+ * Stored configs can be partially shaped (e.g. `{}` or `{ "criteria": null }`)
+ * after a hand-edited import or a restore from another client. Reading
+ * `config.criteria.map(...)` directly would throw and take the whole
+ * preferences read down with it.
+ */
+function getCriteria(config: SortingPriorityConfig | undefined): SortingPriorityConfig["criteria"] {
+  if (!config || !Array.isArray(config.criteria)) {
+    return []
+  }
+
+  return config.criteria.filter(
+    (criterion): criterion is SortingPriorityConfig["criteria"][number] =>
+      Boolean(criterion) && typeof criterion === "object",
+  )
+}
+
+/**
  * Check if a sorting config needs migration
  */
 export function needsSortingConfigMigration(
   config: SortingPriorityConfig | undefined,
 ): boolean {
   if (!config) return true
-  const src = new Set(config.criteria.map((c) => c.id))
+  const src = new Set(getCriteria(config).map((c) => c.id))
   const dst = new Set(DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => c.id))
   if (src.size !== dst.size) return true
   for (const id of dst) if (!src.has(id)) return true
@@ -46,13 +65,13 @@ export function migrateSortingConfig(
     return config
   }
 
-  const existingIds = new Set(config.criteria.map((c) => c.id))
+  const existingIds = new Set(getCriteria(config).map((c) => c.id))
   const allIds = new Set(
     DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => c.id),
   )
 
   let modified = false
-  const newCriteria = [...config.criteria]
+  const newCriteria = [...getCriteria(config)]
 
   // Safety rule: keep disabled accounts at the bottom by default.
   // This criterion should be enabled when introduced so existing users get the expected behavior.
