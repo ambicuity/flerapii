@@ -35,10 +35,7 @@ describe("calculateTotalConsumption account set consistency", () => {
 
     // Only the enabled account may be counted, in both currencies.
     expect(result.USD).toBeCloseTo(500_000 / CONVERSION_FACTOR, 10)
-    expect(result.CNY).toBeCloseTo(
-      (500_000 / CONVERSION_FACTOR) * 7.2,
-      10,
-    )
+    expect(result.CNY).toBeCloseTo((500_000 / CONVERSION_FACTOR) * 7.2, 10)
   })
 
   it("uses the same account set for USD and CNY when an account is excluded from the total balance", () => {
@@ -49,10 +46,7 @@ describe("calculateTotalConsumption account set consistency", () => {
     const result = calculateTotalConsumption([included, excluded])
 
     expect(result.USD).toBeCloseTo(500_000 / CONVERSION_FACTOR, 10)
-    expect(result.CNY).toBeCloseTo(
-      (500_000 / CONVERSION_FACTOR) * 7.2,
-      10,
-    )
+    expect(result.CNY).toBeCloseTo((500_000 / CONVERSION_FACTOR) * 7.2, 10)
   })
 
   it("keeps the CNY total proportional to the USD total across exchange rates", () => {

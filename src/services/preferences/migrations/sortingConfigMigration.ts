@@ -20,7 +20,9 @@ const logger = createLogger("SortingConfigMigration")
  * `config.criteria.map(...)` directly would throw and take the whole
  * preferences read down with it.
  */
-function getCriteria(config: SortingPriorityConfig | undefined): SortingPriorityConfig["criteria"] {
+function getCriteria(
+  config: SortingPriorityConfig | undefined,
+): SortingPriorityConfig["criteria"] {
   if (!config || !Array.isArray(config.criteria)) {
     return []
   }

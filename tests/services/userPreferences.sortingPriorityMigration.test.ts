@@ -1,5 +1,6 @@
-import { Storage } from "@plasmohq/storage"
 import { beforeEach, describe, expect, it } from "vitest"
+
+import { Storage } from "@plasmohq/storage"
 
 import { USER_PREFERENCES_STORAGE_KEYS } from "~/services/core/storageKeys"
 import {
@@ -66,7 +67,9 @@ describe("userPreferences with a malformed sorting config", () => {
     // Any later save must not replace the stored settings with defaults.
     await userPreferences.savePreferences({ themeMode: "dark" })
 
-    const stored = await storage.get(USER_PREFERENCES_STORAGE_KEYS.USER_PREFERENCES)
+    const stored = await storage.get(
+      USER_PREFERENCES_STORAGE_KEYS.USER_PREFERENCES,
+    )
     expect((stored as any)?.webdav?.password).toBe("super-secret")
     expect((stored as any)?.themeMode).toBe("dark")
   })

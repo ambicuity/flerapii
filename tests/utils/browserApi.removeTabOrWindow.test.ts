@@ -60,7 +60,9 @@ describe("removeTabOrWindow", () => {
 
   it("surfaces window removal failures instead of silently removing a tab with the same id", async () => {
     const tabsRemove = vi.fn().mockResolvedValue(undefined)
-    const windowsRemove = vi.fn().mockRejectedValue(new Error("No window with id"))
+    const windowsRemove = vi
+      .fn()
+      .mockRejectedValue(new Error("No window with id"))
 
     ;(globalThis as any).browser = {
       tabs: { remove: tabsRemove },

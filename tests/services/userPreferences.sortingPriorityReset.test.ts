@@ -1,5 +1,6 @@
-import { Storage } from "@plasmohq/storage"
 import { beforeEach, describe, expect, it } from "vitest"
+
+import { Storage } from "@plasmohq/storage"
 
 import { USER_PREFERENCES_STORAGE_KEYS } from "~/services/core/storageKeys"
 import {
@@ -38,11 +39,13 @@ describe("userPreferences sorting priority reset", () => {
     const reset = await userPreferences.resetSortingPriorityConfig()
     expect(reset).toBe(true)
 
-    const stored = await storage.get(USER_PREFERENCES_STORAGE_KEYS.USER_PREFERENCES)
+    const stored = await storage.get(
+      USER_PREFERENCES_STORAGE_KEYS.USER_PREFERENCES,
+    )
     const storedConfig = (stored as any)?.sortingPriorityConfig
     expect(storedConfig).toBeTruthy()
-    expect(
-      storedConfig.criteria.map((c: any) => c.enabled),
-    ).toEqual(DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => c.enabled))
+    expect(storedConfig.criteria.map((c: any) => c.enabled)).toEqual(
+      DEFAULT_SORTING_PRIORITY_CONFIG.criteria.map((c) => c.enabled),
+    )
   })
 })

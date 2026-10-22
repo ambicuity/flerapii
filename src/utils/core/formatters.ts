@@ -186,15 +186,14 @@ export const calculateTotalConsumption = (
   // incomplete data must not throw and abort the whole load.
   const includedAccounts = (accounts ?? []).filter(
     (account) =>
-      account?.disabled !== true &&
-      account?.excludeFromTotalBalance !== true,
+      account?.disabled !== true && account?.excludeFromTotalBalance !== true,
   )
 
   const usdAmount = includedAccounts.reduce(
     (sum, account) =>
       sum +
-      ((account?.account_info?.today_quota_consumption ?? 0) /
-        UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR),
+      (account?.account_info?.today_quota_consumption ?? 0) /
+        UI_CONSTANTS.EXCHANGE_RATE.CONVERSION_FACTOR,
     0,
   )
 

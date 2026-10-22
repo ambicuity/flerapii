@@ -1,7 +1,7 @@
-import { Storage } from "@plasmohq/storage"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-import { API_CREDENTIAL_PROFILES_STORAGE_KEYS } from "~/services/core/storageKeys"
+import { Storage } from "@plasmohq/storage"
+
 import { importFromBackupObject } from "~/services/importExport/importExportService"
 
 const {
@@ -27,16 +27,19 @@ vi.mock("~/services/accounts/accountStorage", () => ({
   },
 }))
 
-vi.mock("~/services/apiCredentialProfiles/apiCredentialProfilesStorage", () => ({
-  apiCredentialProfilesStorage: {
-    mergeConfig: mockMergeCredentialProfiles,
-  },
-  coerceApiCredentialProfilesConfig: (raw: any) => ({
-    version: 1,
-    lastUpdated: 0,
-    profiles: Array.isArray(raw?.profiles) ? raw.profiles : [],
+vi.mock(
+  "~/services/apiCredentialProfiles/apiCredentialProfilesStorage",
+  () => ({
+    apiCredentialProfilesStorage: {
+      mergeConfig: mockMergeCredentialProfiles,
+    },
+    coerceApiCredentialProfilesConfig: (raw: any) => ({
+      version: 1,
+      lastUpdated: 0,
+      profiles: Array.isArray(raw?.profiles) ? raw.profiles : [],
+    }),
   }),
-}))
+)
 
 vi.mock("~/services/tags/tagStorage", () => ({
   tagStorage: {
@@ -78,7 +81,9 @@ describe("importFromBackupObject — non-2.0 payloads", () => {
     } as any)
 
     expect(mockMergeCredentialProfiles).toHaveBeenCalledTimes(1)
-    expect(mockMergeCredentialProfiles.mock.calls[0][0].profiles).toHaveLength(1)
+    expect(mockMergeCredentialProfiles.mock.calls[0][0].profiles).toHaveLength(
+      1,
+    )
     expect(result.sections.apiCredentialProfiles).toBe(true)
     expect(result.allImported).toBe(true)
   })

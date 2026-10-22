@@ -379,10 +379,7 @@ export type TempContext = {
 }
 
 // /
-const tempWindows = new Map<
-  string,
-  { id: number; kind: BrowserResourceKind }
->()
+const tempWindows = new Map<string, { id: number; kind: BrowserResourceKind }>()
 
 const tempRequestContextMap = new Map<string, TempContext>()
 const tempContextById = new Map<number, TempContext>()

@@ -1731,10 +1731,8 @@ class AutoCheckinScheduler {
       // Get all accounts, then exclude disabled accounts from runnable selection.
       // Disabled accounts must not participate, but we still record an explicit
       // skip reason so background status/history can explain why an account was skipped.
-      const {
-        accounts: availableAccounts,
-        readable: accountsReadable,
-      } = await accountStorage.getAllAccountsWithStatus()
+      const { accounts: availableAccounts, readable: accountsReadable } =
+        await accountStorage.getAllAccountsWithStatus()
 
       if (!accountsReadable) {
         // The account store could not be read. That is not the same as "there
@@ -2034,7 +2032,7 @@ class AutoCheckinScheduler {
         ...(currentStatus ?? {}),
         lastRunAt: new Date().toISOString(),
         lastRunResult: AUTO_CHECKIN_RUN_RESULT.FAILED,
-        perAccount: mergeHistory ? currentStatus?.perAccount ?? {} : {},
+        perAccount: mergeHistory ? (currentStatus?.perAccount ?? {}) : {},
         pendingRetry: false,
         retryState: isDailyRun ? undefined : currentStatus?.retryState,
         ...(isDailyRun
@@ -2134,7 +2132,7 @@ class AutoCheckinScheduler {
         updates[accountId] = {
           accountId,
           accountName: account
-            ? accountDisplayNameById.get(account.id) ?? account.id
+            ? (accountDisplayNameById.get(account.id) ?? account.id)
             : accountId,
           status: CHECKIN_RESULT_STATUS.SKIPPED,
           messageKey: this.getSkipReasonMessageKey(
