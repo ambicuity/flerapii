@@ -23,6 +23,7 @@ import {
   onTabRemoved,
   onWindowRemoved,
   removeTabOrWindow,
+  type BrowserResourceKind,
 } from "~/utils/browser/browserApi"
 import {
   addAuthMethodHeader,
@@ -314,7 +315,10 @@ export type TempContext = {
 }
 
 // /
-const tempWindows = new Map<string, number>()
+const tempWindows = new Map<
+  string,
+  { id: number; kind: BrowserResourceKind }
+>()
 
 const tempRequestContextMap = new Map<string, TempContext>()
 const tempContextById = new Map<number, TempContext>()
@@ -354,8 +358,8 @@ function handleTempWindowRemoved(windowId: number) {
   }
 
   let removedRequestId: string | undefined
-  for (const [requestId, storedId] of tempWindows.entries()) {
-    if (storedId === windowId) {
+  for (const [requestId, stored] of tempWindows.entries()) {
+    if (stored.kind === "window" && stored.id === windowId) {
       tempWindows.delete(requestId)
       removedRequestId = requestId
       break
@@ -385,8 +389,8 @@ function handleTempWindowRemoved(windowId: number) {
  */
 function handleTempTabRemoved(tabId: number) {
   let removedRequestId: string | undefined
-  for (const [requestId, storedId] of tempWindows.entries()) {
-    if (storedId === tabId) {
+  for (const [requestId, stored] of tempWindows.entries()) {
+    if (stored.kind === "tab" && stored.id === tabId) {
       tempWindows.delete(requestId)
       removedRequestId = requestId
       break
@@ -441,7 +445,7 @@ export async function handleOpenTempWindow(
         suppressMinimize: true,
       })
 
-      tempWindows.set(requestId, tabId)
+      tempWindows.set(requestId, { id: tabId, kind: "tab" })
       logTempWindow("openTempCompositeTabSuccess", {
         requestId,
         windowId,
@@ -460,7 +464,7 @@ export async function handleOpenTempWindow(
 
       if (window?.id) {
         // ID
-        tempWindows.set(requestId, window.id)
+        tempWindows.set(requestId, { id: window.id, kind: "window" })
         logTempWindow("openTempWindowSuccess", {
           requestId,
           windowId: window.id,
@@ -481,7 +485,7 @@ export async function handleOpenTempWindow(
       //
       const tab = await createTab(url, false)
       if (tab?.id) {
-        tempWindows.set(requestId, tab.id)
+        tempWindows.set(requestId, { id: tab.id, kind: "tab" })
         logTempWindow("openTempTabSuccess", {
           requestId,
           tabId: tab.id,
@@ -518,22 +522,22 @@ export async function handleCloseTempWindow(
 ) {
   try {
     const { requestId } = request
-    const id = tempWindows.get(requestId)
+    const stored = tempWindows.get(requestId)
 
     logTempWindow(RuntimeActionIds.CloseTempWindow, {
       requestId,
-      mappedId: id ?? null,
+      mappedId: stored?.id ?? null,
       hasRequestContext: requestId
         ? tempRequestContextMap.has(requestId)
         : false,
     })
 
-    if (id) {
-      await removeTabOrWindow(id)
+    if (stored) {
+      await removeTabOrWindow(stored.id, stored.kind)
       tempWindows.delete(requestId)
       logTempWindow("closeTempWindowSuccess", {
         requestId,
-        removedId: id,
+        removedId: stored.id,
       })
       sendResponse({ success: true })
       return
@@ -1323,7 +1327,7 @@ async function createTempContextInstance(
     })
     if (contextId) {
       try {
-        await removeTabOrWindow(contextId)
+        await removeTabOrWindow(contextId, type)
       } catch (cleanupError) {
         logger.warn(
           "Failed to cleanup temp context after creation error",
@@ -1550,7 +1554,7 @@ async function destroyContext(
 
   if (!options.skipBrowserRemoval) {
     try {
-      await removeTabOrWindow(context.id)
+      await removeTabOrWindow(context.id, context.type)
     } catch (error) {
       logger.warn("Failed to remove temp context", error)
     }

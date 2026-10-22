@@ -131,28 +131,41 @@ export async function queryTabs(
 }
 
 /**
+ * The kind of browser resource an id refers to.
  *
- *  API
- * @param id  ID
+ * Chrome allocates window ids and tab ids from separate counters, so the two
+ * id spaces overlap and an id cannot be probed against both APIs.
  */
-export async function removeTabOrWindow(id: number): Promise<void> {
-  if (hasWindowsAPI()) {
+export type BrowserResourceKind = "window" | "tab"
+
+/**
+ * Remove a browser window or tab by id.
+ *
+ * The caller must state which kind of resource the id refers to: probing
+ * `windows.remove(tabId)` first would close an unrelated user window whenever
+ * a window happens to have that numeric id.
+ *
+ * @param id Resource id.
+ * @param kind Kind of resource the id refers to.
+ */
+export async function removeTabOrWindow(
+  id: number,
+  kind: BrowserResourceKind,
+): Promise<void> {
+  if (kind === "window" && hasWindowsAPI()) {
     try {
       await browser.windows.remove(id)
       return
     } catch (error) {
-      //  ID ID
-      logger.debug(
-        "removeTabOrWindow: Failed to remove as window, trying as tab",
-        {
-          id,
-          error,
-        },
-      )
+      logger.debug("removeTabOrWindow: Failed to remove as window", {
+        id,
+        error,
+      })
+      throw error
     }
   }
 
-  // Firefox Android  API  API
+  // Firefox Android has no windows API, so a "window" is always a tab there.
   await browser.tabs.remove(id)
 }
 
