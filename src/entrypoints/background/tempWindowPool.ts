@@ -304,12 +304,76 @@ function logTempWindow(event: string, details?: Record<string, unknown>) {
   }
 }
 
+/**
+ * Minimal shape required by the context-pool reuse policy.
+ */
+export type TempContextHolder = {
+  holders: Set<string>
+}
+
+/**
+ * Select the first pooled context that is free to serve a new request.
+ *
+ * Contexts that are still held by another request are skipped: sharing one
+ * tab between concurrent requests makes the first request's release tear the
+ * pool down while the second request is still running.
+ */
+export function selectReusableTempContext<T extends TempContextHolder>(
+  contexts: T[],
+): T | null {
+  for (const context of contexts) {
+    if (context.holders.size === 0) {
+      return context
+    }
+  }
+
+  return null
+}
+
+/**
+ * Whether every context in the pool is free, i.e. the pool can be torn down.
+ */
+export function isTempContextPoolIdle<T extends TempContextHolder>(
+  contexts: T[],
+): boolean {
+  return contexts.every((context) => context.holders.size === 0)
+}
+
+/**
+ * Mark a context as held by a request.
+ */
+export function holdTempContext<T extends TempContextHolder>(
+  context: T,
+  requestId: string,
+): void {
+  context.holders.add(requestId)
+}
+
+/**
+ * Release a single request's hold on a context.
+ *
+ * Other requests that still hold the same context keep their hold.
+ */
+export function releaseTempContextHold<T extends TempContextHolder>(
+  context: T,
+  requestId: string,
+): void {
+  context.holders.delete(requestId)
+}
+
 export type TempContext = {
   id: number
   tabId: number
   origin: string
   type: "window" | "tab"
-  busy: boolean
+  /**
+   * Request ids currently holding this context.
+   *
+   * In-use state is tracked per request rather than with a single flag: a
+   * context that is still serving one request must not be handed to another
+   * request, and releasing one request must not release another's hold.
+   */
+  holders: Set<string>
   lastUsed: number
   releaseTimer?: ReturnType<typeof setTimeout>
 }
@@ -1054,7 +1118,7 @@ async function acquireTempContext(
       throw new Error("Acquired temp context is no longer valid")
     }
 
-    context.busy = true
+    holdTempContext(context, requestId)
     context.lastUsed = Date.now()
     if (context.releaseTimer) {
       clearTimeout(context.releaseTimer)
@@ -1134,11 +1198,11 @@ async function releaseTempContext(
         return
       }
 
-      context.busy = false
+      releaseTempContextHold(context, requestId)
       context.lastUsed = Date.now()
 
       const pool = tempContextsByOrigin.get(context.origin)
-      if (pool && pool.every((ctx) => !ctx.busy)) {
+      if (pool && isTempContextPoolIdle(pool)) {
         logTempWindow("releaseTempContextDestroyOriginPool", {
           requestId,
           origin: context.origin,
@@ -1179,13 +1243,11 @@ async function getReusableContext(origin: string) {
     return null
   }
 
-  //  context.busy
-  //  origin  withOriginLock
-  // -  acquireTempContext
-  // -  busy=true /
+  const aliveContexts: TempContext[] = []
   for (const context of pool) {
     if (await isContextAlive(context)) {
-      return context
+      aliveContexts.push(context)
+      continue
     }
 
     await destroyContext(context, {
@@ -1194,7 +1256,7 @@ async function getReusableContext(origin: string) {
     })
   }
 
-  return null
+  return selectReusableTempContext(aliveContexts)
 }
 
 /**
@@ -1312,7 +1374,7 @@ async function createTempContextInstance(
       tabId,
       origin,
       type,
-      busy: false,
+      holders: new Set<string>(),
       lastUsed: Date.now(),
     }
   } catch (error) {
@@ -1492,7 +1554,7 @@ function scheduleContextCleanup(context: TempContext) {
   })
 
   context.releaseTimer = setTimeout(() => {
-    if (!context.busy) {
+    if (context.holders.size === 0) {
       logTempWindow("idleContextCleanupTriggered", {
         origin: context.origin,
         contextId: context.id,
