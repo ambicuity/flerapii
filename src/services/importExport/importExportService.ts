@@ -239,7 +239,6 @@ function resolveAccountsConfig(raw: RawBackupData): {
  *
  * When the payload carries a tag store but no accounts, the tag store is merged
  * first so that credential-profile tag references can resolve.
- *
  * @returns true when the section was imported.
  */
 async function importApiCredentialProfilesSection(params: {
