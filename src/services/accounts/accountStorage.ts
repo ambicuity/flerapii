@@ -125,16 +125,36 @@ class AccountStorageService {
    * Get all accounts (migrates legacy configs if needed).
    */
   async getAllAccounts(): Promise<SiteAccount[]> {
+    const { accounts } = await this.getAllAccountsWithStatus()
+    return accounts
+  }
+
+  /**
+   * Get all accounts together with a flag that tells whether the store could be
+   * read.
+   *
+   * {@link getAllAccounts} degrades to an empty list when the store cannot be
+   * read, which is indistinguishable from "no accounts are configured".
+   * Callers that must tell those apart (for example the auto check-in
+   * scheduler) use this method instead.
+   */
+  async getAllAccountsWithStatus(): Promise<{
+    accounts: SiteAccount[]
+    readable: boolean
+  }> {
     try {
       // Ensure tag data is migrated on reads so downstream consumers always see
       // `tagIds` and a consistent global tag store.
       await ensureAccountTagsStorageMigrated(this.storage)
 
-      const config = await this.getStorageConfigOrDefault()
+      const config = await this.getStorageConfig()
       const { migratedCount } = migrateAccountsConfig(config.accounts)
 
       if (migratedCount === 0) {
-        return config.accounts.map(normalizeSiteAccount)
+        return {
+          accounts: config.accounts.map(normalizeSiteAccount),
+          readable: true,
+        }
       }
 
       // If any account schemas were upgraded, persist the normalized set
@@ -144,10 +164,13 @@ class AccountStorageService {
       logger.info("Accounts migrated; persisting updated accounts", {
         migratedCount,
       })
-      return await this.migrateAndSaveAccounts()
+      return {
+        accounts: await this.migrateAndSaveAccounts(),
+        readable: true,
+      }
     } catch (error) {
       logger.error("", error)
-      return []
+      return { accounts: [], readable: false }
     }
   }
 
