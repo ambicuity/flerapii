@@ -128,6 +128,10 @@ async function resolveTempContextMode(): Promise<
 
 /**
  * Prepares fetch options for temp-context requests by applying cookie/session overrides when needed.
+ *
+ * Installed DNR rule ids are appended to the caller-owned `ruleIds` set as soon
+ * as they are created, so a later failure cannot leave a rule installed without
+ * an owner able to remove it.
  */
 async function prepareTempContextFetchOptions(params: {
   tabId: number
@@ -137,13 +141,12 @@ async function prepareTempContextFetchOptions(params: {
   accountId?: string
   cookieAuthSessionCookie?: string
   addFirefoxAuthModeHeader?: boolean
+  ruleIds: Set<number>
 }): Promise<{
-  ruleIds: number[]
   effectiveFetchOptions: RequestInit
 }> {
-  const { tabId, url, rawOptions, resolvedAuthType } = params
+  const { tabId, url, rawOptions, resolvedAuthType, ruleIds } = params
 
-  const ruleIds = new Set<number>()
   let effectiveFetchOptions: RequestInit = rawOptions
 
   // Chromium-based browsers: for token-auth (credentials=omit) we still need WAF cookies,
@@ -238,7 +241,7 @@ async function prepareTempContextFetchOptions(params: {
     }
   }
 
-  return { ruleIds: Array.from(ruleIds), effectiveFetchOptions }
+  return { effectiveFetchOptions }
 }
 
 /**
@@ -656,10 +659,8 @@ export async function handleTempWindowFetch(
       resolvedAuthType,
       accountId,
       cookieAuthSessionCookie,
+      ruleIds,
     })
-    for (const ruleId of prepared.ruleIds) {
-      ruleIds.add(ruleId)
-    }
     effectiveFetchOptions = prepared.effectiveFetchOptions
 
     const response = await browser.tabs.sendMessage(tabId, {
@@ -834,10 +835,8 @@ export async function handleTempWindowTurnstileFetch(
       accountId,
       cookieAuthSessionCookie,
       addFirefoxAuthModeHeader: true,
+      ruleIds,
     })
-    for (const ruleId of prepared.ruleIds) {
-      ruleIds.add(ruleId)
-    }
     effectiveFetchOptions = prepared.effectiveFetchOptions
 
     const response = (await browser.tabs.sendMessage(tabId, {
